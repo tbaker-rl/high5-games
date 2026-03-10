@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Midnight Detective: High Stakes</title>
+    <title>Copilot Team Trivia</title>
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --text-color: #e0e0e0;
-            --accent-color: #d4af37; /* Gold */
-            --wrong-color: #ff4444;
-            --correct-color: #44ff44;
-            --card-bg: #2d2d2d;
+            --bg-color: #0f172a; /* Deep slate blue */
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8; /* Bright sky blue */
+            --card-bg: #1e293b;
+            --timer-color: #fbbf24; /* Amber */
         }
 
         body {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
@@ -26,462 +25,246 @@
             padding: 20px;
         }
 
-        /* Fixed Scoreboard */
-        .scoreboard {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #000;
-            border: 2px solid var(--accent-color);
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            z-index: 100;
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-        }
-
-        .score-animate-up { animation: pulseGreen 0.5s; }
-        .score-animate-down { animation: pulseRed 0.5s; }
-
-        @keyframes pulseGreen {
-            0% { background-color: #000; }
-            50% { background-color: var(--correct-color); color: #000; }
-            100% { background-color: #000; }
-        }
-
-        @keyframes pulseRed {
-            0% { background-color: #000; }
-            50% { background-color: var(--wrong-color); color: #000; }
-            100% { background-color: #000; }
-        }
-
         .container {
             background-color: var(--card-bg);
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            max-width: 650px;
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 600px;
             width: 100%;
-            border: 1px solid #444;
+            border: 1px solid #334155;
+            text-align: center;
             position: relative;
         }
 
-        h1, h2, h3 {
-            color: var(--accent-color);
-            text-align: center;
+        h1 { color: var(--accent-color); font-size: 2.5rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 2rem; margin-bottom: 1rem; color: #fff; }
+        
+        .question-text {
+            font-size: 1.5rem;
+            line-height: 1.4;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
         }
 
         .btn {
-            display: block;
+            display: inline-block;
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             margin: 10px 0;
-            background-color: #333;
+            background-color: #2563eb;
             color: white;
-            border: 1px solid #555;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-
-        .btn:hover {
-            background-color: #444;
-            border-color: var(--accent-color);
-        }
-
-        .btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .hidden { display: none; }
-
-        .feedback {
-            margin-top: 15px;
-            padding: 10px;
-            text-align: center;
+            font-size: 1.2rem;
             font-weight: bold;
-            border-radius: 4px;
+            transition: all 0.2s;
         }
 
-        /* Mystery Section Styles */
-        .clue-box {
-            background: #222;
-            padding: 15px;
-            border-left: 4px solid var(--accent-color);
-            margin-bottom: 15px;
-            font-style: italic;
-            animation: fadeIn 0.5s;
+        .btn:hover { background-color: #3b82f6; transform: translateY(-2px); }
+        .btn-secondary { background-color: #475569; }
+        .btn-secondary:hover { background-color: #64748b; }
+
+        .hidden { display: none !important; }
+
+        /* Timer Styles */
+        .timer-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 6px solid #334155;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0 auto 20px auto;
+            color: var(--timer-color);
+            transition: color 0.3s;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+        .timer-warning { color: #ef4444; border-color: #ef4444; animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Reveal Styles */
+        .reveal-box {
+            background-color: #166534;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            margin: 20px 0;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .suspect-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .suspect-btn {
-            background: #444;
-            color: #fff;
-            padding: 10px;
-            border: 2px solid #666;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .suspect-btn:hover {
-            border-color: var(--accent-color);
-            background: #555;
-        }
-
-        .risk-badge {
-            display: inline-block;
-            background: var(--accent-color);
-            color: #000;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        /* Results */
-        .final-rank { font-size: 1.5rem; text-align: center; margin-bottom: 10px; color: #fff; }
-        .big-score { font-size: 4rem; text-align: center; color: var(--accent-color); margin: 20px 0; }
+        .progress { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem; }
     </style>
 </head>
 <body>
 
-<div class="scoreboard" id="scoreboard">
-    Credibility: <span id="current-score">10</span>
-</div>
-
 <div class="container">
     <div id="start-screen">
-        <h1>🕵️ The Midnight Detective</h1>
-        <h3>High Stakes Edition</h3>
-        <p><b>Phase 1:</b> 9 Logic Puzzles. (+1 for correct, -1 for wrong).</p>
-        <p><b>Phase 2:</b> The Whodunit. Accuse early for massive points (±30), or wait for clues and lower the stakes.</p>
-        <button class="btn" onclick="startGame()">Begin Investigation (Start with 10 pts)</button>
-    </div>
-
-    <div id="quiz-screen" class="hidden">
-        <h2 id="question-number">Case 1/9</h2>
-        <p id="question-text" style="font-size: 1.2rem; margin-bottom: 20px;">Question goes here</p>
-        <div id="answer-buttons"></div>
-        <div id="feedback-area" class="feedback hidden"></div>
-        <button id="next-btn" class="btn hidden" onclick="nextQuestion()">Next Case</button>
-    </div>
-
-    <div id="mystery-screen" class="hidden">
-        <h2>The Final Whodunit</h2>
-        <p>Who stole the diamond? <br>
-           <span style="color: #aaa; font-size: 0.9em;">(Warning: Wrong accusations deduct points!)</span>
+        <h1>🎙️ Copilot Team Trivia</h1>
+        <p style="font-size: 1.2rem; color: #cbd5e1; margin-bottom: 2rem;">
+            21 Questions. 30 seconds to debate. <br>Who knows the team best?
         </p>
-
-        <div id="clue-container"></div>
-        
-        <button id="next-clue-btn" class="btn" onclick="revealNextClue()">
-            🔍 Reveal Clue 1 (Start Round)
-        </button>
-
-        <div id="accusation-area" class="hidden">
-            <hr style="border-color: #444; margin: 20px 0;">
-            <h3>MAKE AN ARREST</h3>
-            <p style="text-align: center;">Current Stakes: <span id="current-stakes" class="risk-badge">±30 Points</span></p>
-            
-            <div class="suspect-grid">
-                <button class="suspect-btn" onclick="makeAccusation('Chef')">
-                    👨‍🍳 The Chef<br><small>Kitchen</small>
-                </button>
-                <button class="suspect-btn" onclick="makeAccusation('Painter')">
-                    🎨 The Painter<br><small>Renovation</small>
-                </button>
-                <button class="suspect-btn" onclick="makeAccusation('Lifeguard')">
-                    🏊 The Lifeguard<br><small>Pool</small>
-                </button>
-                <button class="suspect-btn" onclick="makeAccusation('Librarian')">
-                    📚 The Librarian<br><small>Archives</small>
-                </button>
-            </div>
-        </div>
+        <button class="btn" onclick="startGame()">Start the Game</button>
     </div>
 
-    <div id="result-screen" class="hidden">
-        <h1>Case Closed</h1>
-        <div class="big-score" id="final-score-display">0</div>
-        <div class="final-rank" id="final-rank-text">Rookie</div>
-        <p id="final-message" style="text-align: center;"></p>
-        <button class="btn" onclick="copyResult()">📋 Copy Report</button>
-        <button class="btn" onclick="location.reload()">🔄 New Case</button>
+    <div id="card-screen" class="hidden">
+        <div class="progress" id="progress-text">Card 1 / 21</div>
+        <h2 id="person-name">Name</h2>
+        
+        <div class="question-text" id="question-text">
+            Question goes here?
+        </div>
+
+        <div id="timer-area">
+            <div class="timer-circle" id="timer-display">30</div>
+            <button class="btn btn-secondary" id="start-timer-btn" onclick="startTimer()">⏱️ Start 30s Timer</button>
+        </div>
+
+        <div id="reveal-area" class="hidden">
+            <div class="reveal-box">
+                ☕ <span id="reveal-text">Name, time to spill the tea!</span>
+            </div>
+            <button class="btn" onclick="nextQuestion()">Next Question ➡️</button>
+        </div>
+        
+        <button class="btn btn-secondary hidden" id="manual-reveal-btn" onclick="triggerReveal()" style="margin-top: 10px; font-size: 1rem; padding: 10px;">Skip Timer & Spill the Tea</button>
+    </div>
+
+    <div id="end-screen" class="hidden">
+        <h1>🎉 That's a wrap!</h1>
+        <p style="font-size: 1.2rem; margin-top: 20px;">Now we all know a little too much about each other.</p>
+        <button class="btn" onclick="location.reload()" style="margin-top: 30px;">Play Again</button>
     </div>
 </div>
 
 <script>
-    // --- DATA ---
-    const logicQuestions = [
-         {
-            q: "A thief left footprints only at the entrance, but not at the exit. What does this suggest?",
-            answers: [
-                { text: "They escaped somewhere else", correct: true },
-                { text: "They erased only the entry footprints", correct: false },
-                { text: "They flew away", correct: false }
-            ],
-            explanation: "Logic: If footprints go in but don't come out, they exited via a window, back door, or roof."
-        },
-        {
-            q: "Police find broken glass outside a house. The owner claims a break-in. Police know he is lying. Why?",
-            answers: [
-                { text: "The thief picked the lock", correct: false },
-                { text: "Glass outside means it was broken from inside", correct: true },
-                { text: "The owner held a hammer", correct: false }
-            ],
-            explanation: "Physics: Breaking a window pushes glass in the direction of the force."
-        },
-        {
-            q: "An archaeologist finds a gold coin marked '44 B.C.' The curator calls it a fake. Why?",
-            answers: [
-                { text: "Gold doesn't rust", correct: false },
-                { text: "Romans used silver", correct: false },
-                { text: "They didn't know they lived in 'B.C.'", correct: true }
-            ],
-            explanation: "History: B.C. (Before Christ) is a retroactive label applied centuries later."
-        },
-        {
-            q: "Jack and Jill drink the same tea. Jack drinks fast and lives. Jill drinks slow and dies. The poison was in...?",
-            answers: [
-                { text: "The liquid", correct: false },
-                { text: "The ice cubes", correct: true },
-                { text: "The cup rim", correct: false }
-            ],
-            explanation: "Chemistry: Jack finished his drink before the poisoned ice melted."
-        },
-        {
-            q: "A watchman dreams his boss's plane will crash. He warns the boss. The plane crashes. The boss fires him. Why?",
-            answers: [
-                { text: "He caused the crash", correct: false },
-                { text: "He was sleeping on the job", correct: true },
-                { text: "He was superstitious", correct: false }
-            ],
-            explanation: "Policy: A night watchman shouldn't be asleep to have dreams."
-        },
-        {
-            q: "A body is found with a tape recorder. It plays a suicide note then a gunshot. Police rule it murder. Why?",
-            answers: [
-                { text: "The tape was rewound", correct: true },
-                { text: "Voice didn't match", correct: false },
-                { text: "Batteries were dead", correct: false }
-            ],
-            explanation: "Logic: A dead person cannot rewind the tape to the start of the message."
-        },
-        {
-            q: "A ship has a rope ladder. 3 rungs are underwater. Tide rises 6 inches/hr. After 4 hours, how many are underwater?",
-            answers: [
-                { text: "7 rungs", correct: false },
-                { text: "3 rungs", correct: true },
-                { text: "5 rungs", correct: false }
-            ],
-            explanation: "Trick: The ship floats, so it rises WITH the tide."
-        },
-        {
-            q: "Suspect claims his car wouldn't start due to cold. Detective touches the hood and arrests him. Why?",
-            answers: [
-                { text: "Hood was cold", correct: false },
-                { text: "Hood was warm", correct: true },
-                { text: "No keys in ignition", correct: false }
-            ],
-            explanation: "Evidence: A warm hood means the engine was recently running."
-        },
-        {
-            q: "A man is found hanging in an empty room with a puddle of water. How did he do it?",
-            answers: [
-                { text: "Jumped high", correct: false },
-                { text: "Stood on a block of ice", correct: true },
-                { text: "Floated on water", correct: false }
-            ],
-            explanation: "Physics: The ice melted, leaving the puddle and removing his support."
-        }
+    const triviaData = [
+        { name: "Alan Secundo", q: "What city does Alan live in?" },
+        { name: "Annabelle Joynson", q: "What is Annabelle's favorite TV show?" },
+        { name: "Beatriz Donega", q: "What is Beatriz's favorite type of cuisine?" },
+        { name: "Bhavesh Jaisinghani", q: "How many languages does Bhavesh speak?" },
+        { name: "Chris Hodapp", q: "What was the name of Chris's first pet?" },
+        { name: "Dmitrii Zakharov", q: "What is Dmitrii's favorite sport to watch?" },
+        { name: "Jens Phanich", q: "What is Jens's favorite childhood movie?" },
+        { name: "Jonathan Sudarpo", q: "How many countries has Jonathan visited?" },
+        { name: "Li Song", q: "What is Li's go-to karaoke song?" },
+        { name: "Ljupco Petkovski", q: "What kind of pet does Ljupco have?" },
+        { name: "Mathuriga Thavarajah", q: "What is Mathuriga's favorite food to cook?" },
+        { name: "Mihir Ahuja", q: "What instrument did Mihir play in high school?" },
+        { name: "Nana Asante-Apeatu", q: "How many books does Nana read per year?" },
+        { name: "Omar Alamrani", q: "What is Omar's favorite sports team?" },
+        { name: "Sumit Malhotra", q: "What city was Sumit born in?" },
+        { name: "Thomas Baker", q: "What is Thomas's standard coffee shop order?" },
+        { name: "Tiffany Sentosa", q: "What is Tiffany's middle name?" },
+        { name: "Tushar Sharma", q: "What is Tushar's favorite board game?" },
+        { name: "Tyler Foreman", q: "What make and model was Tyler's first car?" },
+        { name: "Vitor Bichara", q: "What is Vitor's favorite holiday destination?" },
+        { name: "Warren Baltz", q: "What is Warren's favorite hobby on a Sunday?" }
     ];
 
-    const mysteryData = {
-        clues: [
-            "Clue 1: Security footage shows the thief entered via a ventilation shaft. Dust was undisturbed. The thief wore smooth material (spandex/swimwear), not cotton.",
-            "Clue 2: A witness saw the thief putting on sunglasses immediately upon exiting, wincing at the sunlight.",
-            "Clue 3: Traces of paper dust and binding glue were found on the thief's path."
-        ],
-        points: [30, 20, 10] // Corresponds to Clue 1, 2, 3
-    };
-
-    // --- STATE ---
-    let currentQuestionIndex = 0;
-    let score = 10; // STARTING SCORE
-    let currentClueIndex = -1; // -1 means no clues revealed yet
-
-    // --- FUNCTIONS ---
-    function updateScore(amount) {
-        score += amount;
-        const scoreEl = document.getElementById('current-score');
-        const board = document.getElementById('scoreboard');
-        
-        scoreEl.innerText = score;
-
-        // Animation
-        board.classList.remove('score-animate-up', 'score-animate-down');
-        void board.offsetWidth; // Trigger reflow
-        if(amount > 0) board.classList.add('score-animate-up');
-        if(amount < 0) board.classList.add('score-animate-down');
+    // Shuffle array so people don't know when their turn is coming
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
+
+    let gameData = [];
+    let currentIndex = 0;
+    let timerInterval;
 
     function startGame() {
+        gameData = shuffle([...triviaData]);
         document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('quiz-screen').classList.remove('hidden');
-        loadQuestion();
+        document.getElementById('card-screen').classList.remove('hidden');
+        loadCard();
     }
 
-    function loadQuestion() {
-        const qData = logicQuestions[currentQuestionIndex];
-        document.getElementById('question-number').innerText = `Case ${currentQuestionIndex + 1}/9`;
-        document.getElementById('question-text').innerText = qData.q;
+    function loadCard() {
+        const currentData = gameData[currentIndex];
         
-        const btnContainer = document.getElementById('answer-buttons');
-        btnContainer.innerHTML = '';
+        // Reset UI
+        document.getElementById('reveal-area').classList.add('hidden');
+        document.getElementById('timer-area').classList.remove('hidden');
+        document.getElementById('start-timer-btn').classList.remove('hidden');
+        document.getElementById('manual-reveal-btn').classList.add('hidden');
         
-        qData.answers.forEach(ans => {
-            const btn = document.createElement('button');
-            btn.innerText = ans.text;
-            btn.classList.add('btn');
-            btn.onclick = () => selectAnswer(btn, ans.correct, qData.explanation);
-            btnContainer.appendChild(btn);
-        });
+        const timerDisplay = document.getElementById('timer-display');
+        timerDisplay.innerText = "30";
+        timerDisplay.classList.remove('timer-warning');
 
-        document.getElementById('feedback-area').classList.add('hidden');
-        document.getElementById('next-btn').classList.add('hidden');
+        // Load Content
+        document.getElementById('progress-text').innerText = `Card ${currentIndex + 1} / ${gameData.length}`;
+        document.getElementById('person-name').innerText = currentData.name;
+        document.getElementById('question-text').innerText = currentData.q;
     }
 
-    function selectAnswer(btn, isCorrect, explanation) {
-        const buttons = document.getElementById('answer-buttons').children;
-        for (let b of buttons) {
-            b.disabled = true;
-            b.style.opacity = "0.5";
-        }
-
-        const feedback = document.getElementById('feedback-area');
-        feedback.classList.remove('hidden');
-
-        if (isCorrect) {
-            btn.style.backgroundColor = "var(--correct-color)";
-            btn.style.color = "black";
-            updateScore(1); // +1 POINT
-            feedback.innerHTML = "✅ CORRECT (+1 pt)<br>" + explanation;
-            feedback.style.color = "var(--correct-color)";
-        } else {
-            btn.style.backgroundColor = "var(--wrong-color)";
-            updateScore(-1); // -1 POINT
-            feedback.innerHTML = "❌ WRONG (-1 pt)<br>" + explanation;
-            feedback.style.color = "var(--wrong-color)";
-        }
+    function startTimer() {
+        document.getElementById('start-timer-btn').classList.add('hidden');
+        document.getElementById('manual-reveal-btn').classList.remove('hidden');
         
-        document.getElementById('next-btn').classList.remove('hidden');
+        let timeLeft = 30;
+        const timerDisplay = document.getElementById('timer-display');
+        
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerDisplay.innerText = timeLeft;
+            
+            if (timeLeft <= 10) {
+                timerDisplay.classList.add('timer-warning');
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                triggerReveal();
+            }
+        }, 1000);
+    }
+
+    function triggerReveal() {
+        clearInterval(timerInterval);
+        const currentData = gameData[currentIndex];
+        
+        document.getElementById('timer-area').classList.add('hidden');
+        document.getElementById('manual-reveal-btn').classList.add('hidden');
+        
+        const revealArea = document.getElementById('reveal-area');
+        revealArea.classList.remove('hidden');
+        
+        // Extract just the first name for the prompt
+        const firstName = currentData.name.split(' ')[0];
+        document.getElementById('reveal-text').innerText = `Time's up, ${firstName}... spill the tea!`;
     }
 
     function nextQuestion() {
-        currentQuestionIndex++;
-        if (currentQuestionIndex < logicQuestions.length) {
-            loadQuestion();
+        currentIndex++;
+        if (currentIndex < gameData.length) {
+            loadCard();
         } else {
-            startMysteryPhase();
+            document.getElementById('card-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
         }
-    }
-
-    function startMysteryPhase() {
-        document.getElementById('quiz-screen').classList.add('hidden');
-        document.getElementById('mystery-screen').classList.remove('hidden');
-    }
-
-    function revealNextClue() {
-        currentClueIndex++;
-        const container = document.getElementById('clue-container');
-        const clueDiv = document.createElement('div');
-        clueDiv.classList.add('clue-box');
-        clueDiv.innerText = mysteryData.clues[currentClueIndex];
-        container.appendChild(clueDiv);
-
-        const btn = document.getElementById('next-clue-btn');
-        const stakesBadge = document.getElementById('current-stakes');
-
-        // Reveal the Accusation Buttons if this is the first clue
-        if (currentClueIndex === 0) {
-            document.getElementById('accusation-area').classList.remove('hidden');
-        }
-
-        // Update Stakes Display
-        const currentPoints = mysteryData.points[currentClueIndex];
-        stakesBadge.innerText = `±${currentPoints} Points`;
-
-        // Update Button Text for NEXT clue
-        if (currentClueIndex < 2) {
-            const nextPoints = mysteryData.points[currentClueIndex + 1];
-            btn.innerText = `📉 Reveal Next Clue (Stakes drop to ${nextPoints})`;
-        } else {
-            btn.classList.add('hidden'); // No more clues
-        }
-    }
-
-    function makeAccusation(suspect) {
-        const pointsAtStake = mysteryData.points[currentClueIndex];
-        let won = false;
-
-        if (suspect === 'Librarian') {
-            updateScore(pointsAtStake);
-            won = true;
-        } else {
-            updateScore(-pointsAtStake);
-            won = false;
-        }
-
-        showResults(won, suspect, pointsAtStake);
-    }
-
-    function showResults(won, suspect, points) {
-        document.getElementById('mystery-screen').classList.add('hidden');
-        document.getElementById('result-screen').classList.remove('hidden');
-        document.getElementById('scoreboard').classList.add('hidden'); // Hide small scoreboard
-
-        document.getElementById('final-score-display').innerText = score;
-
-        // Ranking Logic based on high scores
-        let rank = "";
-        if (score >= 40) rank = "🕵️‍♂️ Sherlock Holmes";
-        else if (score >= 25) rank = "👮 Senior Detective";
-        else if (score >= 10) rank = "🔦 Beat Cop";
-        else if (score >= 0) rank = "🍩 Mall Cop";
-        else rank = "🤡 Clumsy Criminal";
-
-        document.getElementById('final-rank-text').innerText = rank;
-
-        let msg = "";
-        if (won) {
-            msg = `Brilliant! You caught the Librarian and earned ${points} points! The paper dust and aversion to light were the key.`;
-        } else {
-            msg = `Disaster! You accused the ${suspect} and lost ${points} points. It was the Librarian! (Paper dust + hates light).`;
-        }
-        
-        document.getElementById('final-message').innerText = msg;
-    }
-
-    function copyResult() {
-        const rank = document.getElementById('final-rank-text').innerText;
-        const finalScore = document.getElementById('final-score-display').innerText;
-        const text = `I scored ${finalScore} points on the Midnight Detective Challenge!\nRank: ${rank}`;
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Report copied to clipboard!");
-        });
     }
 </script>
 
