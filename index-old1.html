@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copilot Team Trivia</title>
+    <style>
+        :root {
+            --bg-color: #0f172a; /* Deep slate blue */
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8; /* Bright sky blue */
+            --card-bg: #1e293b;
+            --timer-color: #fbbf24; /* Amber */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid #334155;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 { color: var(--accent-color); font-size: 2.5rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 2rem; margin-bottom: 1rem; color: #fff; }
+        
+        .question-text {
+            font-size: 1.5rem;
+            line-height: 1.4;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { background-color: #3b82f6; transform: translateY(-2px); }
+        .btn-secondary { background-color: #475569; }
+        .btn-secondary:hover { background-color: #64748b; }
+
+        .hidden { display: none !important; }
+
+        /* Timer Styles */
+        .timer-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 6px solid #334155;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0 auto 20px auto;
+            color: var(--timer-color);
+            transition: color 0.3s;
+        }
+
+        .timer-warning { color: #ef4444; border-color: #ef4444; animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Reveal Styles */
+        .reveal-box {
+            background-color: #166534;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            margin: 20px 0;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="start-screen">
+        <h1>🎙️ Copilot Team Trivia</h1>
+        <p style="font-size: 1.2rem; color: #cbd5e1; margin-bottom: 2rem;">
+            21 Questions. 30 seconds to debate. <br>Who knows the team best?
+        </p>
+        <button class="btn" onclick="startGame()">Start the Game</button>
+    </div>
+
+    <div id="card-screen" class="hidden">
+        <div class="progress" id="progress-text">Card 1 / 21</div>
+        <h2 id="person-name">Name</h2>
+        
+        <div class="question-text" id="question-text">
+            Question goes here?
+        </div>
+
+        <div id="timer-area">
+            <div class="timer-circle" id="timer-display">30</div>
+            <button class="btn btn-secondary" id="start-timer-btn" onclick="startTimer()">⏱️ Start 30s Timer</button>
+        </div>
+
+        <div id="reveal-area" class="hidden">
+            <div class="reveal-box">
+                ☕ <span id="reveal-text">Name, time to spill the tea!</span>
+            </div>
+            <button class="btn" onclick="nextQuestion()">Next Question ➡️</button>
+        </div>
+        
+        <button class="btn btn-secondary hidden" id="manual-reveal-btn" onclick="triggerReveal()" style="margin-top: 10px; font-size: 1rem; padding: 10px;">Skip Timer & Spill the Tea</button>
+    </div>
+
+    <div id="end-screen" class="hidden">
+        <h1>🎉 That's a wrap!</h1>
+        <p style="font-size: 1.2rem; margin-top: 20px;">Now we all know a little too much about each other.</p>
+        <button class="btn" onclick="location.reload()" style="margin-top: 30px;">Play Again</button>
+    </div>
+</div>
+
+<script>
+    const triviaData = [
+        { name: "Alan Secundo", q: "What city does Alan live in?" },
+        { name: "Annabelle Joynson", q: "What is Annabelle's favorite TV show?" },
+        { name: "Beatriz Donega", q: "What is Beatriz's favorite type of cuisine?" },
+        { name: "Bhavesh Jaisinghani", q: "How many languages does Bhavesh speak?" },
+        { name: "Chris Hodapp", q: "What was the name of Chris's first pet?" },
+        { name: "Dmitrii Zakharov", q: "What is Dmitrii's favorite sport to watch?" },
+        { name: "Jens Phanich", q: "What is Jens's favorite childhood movie?" },
+        { name: "Jonathan Sudarpo", q: "How many countries has Tobias visited?" },
+        { name: "Li Song", q: "What is Li's go-to karaoke song?" },
+        { name: "Ljupco Petkovski", q: "What kind of pet does Ljupco have?" },
+        { name: "Mathuriga Thavarajah", q: "What is Mathuriga's favorite food to cook?" },
+        { name: "Mihir Ahuja", q: "What instrument did Mihir play in high school?" },
+        { name: "Nana Asante-Apeatu", q: "How many books does Nana read per year?" },
+        { name: "Omar Alamrani", q: "What is Omar's favorite sports team?" },
+        { name: "Thomas Baker", q: "What is Thomas's standard coffee shop order?" },
+        { name: "Tiffany Sentosa", q: "What is Tiffany's nic-name?" },
+        { name: "Tushar Sharma", q: "What is Tushar's favorite board game?" },
+        { name: "Vitor Bichara", q: "What is Vitor's favorite holiday destination?" },
+        { name: "Warren Baltz", q: "What is Warren's favorite hobby on a Sunday?" }
+    ];
+
+    // Shuffle array so people don't know when their turn is coming
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    let gameData = [];
+    let currentIndex = 0;
+    let timerInterval;
+
+    function startGame() {
+        gameData = shuffle([...triviaData]);
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('card-screen').classList.remove('hidden');
+        loadCard();
+    }
+
+    function loadCard() {
+        const currentData = gameData[currentIndex];
+        
+        // Reset UI
+        document.getElementById('reveal-area').classList.add('hidden');
+        document.getElementById('timer-area').classList.remove('hidden');
+        document.getElementById('start-timer-btn').classList.remove('hidden');
+        document.getElementById('manual-reveal-btn').classList.add('hidden');
+        
+        const timerDisplay = document.getElementById('timer-display');
+        timerDisplay.innerText = "30";
+        timerDisplay.classList.remove('timer-warning');
+
+        // Load Content
+        document.getElementById('progress-text').innerText = `Card ${currentIndex + 1} / ${gameData.length}`;
+        document.getElementById('person-name').innerText = currentData.name;
+        document.getElementById('question-text').innerText = currentData.q;
+    }
+
+    function startTimer() {
+        document.getElementById('start-timer-btn').classList.add('hidden');
+        document.getElementById('manual-reveal-btn').classList.remove('hidden');
+        
+        let timeLeft = 30;
+        const timerDisplay = document.getElementById('timer-display');
+        
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerDisplay.innerText = timeLeft;
+            
+            if (timeLeft <= 10) {
+                timerDisplay.classList.add('timer-warning');
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                triggerReveal();
+            }
+        }, 1000);
+    }
+
+    function triggerReveal() {
+        clearInterval(timerInterval);
+        const currentData = gameData[currentIndex];
+        
+        document.getElementById('timer-area').classList.add('hidden');
+        document.getElementById('manual-reveal-btn').classList.add('hidden');
+        
+        const revealArea = document.getElementById('reveal-area');
+        revealArea.classList.remove('hidden');
+        
+        // Extract just the first name for the prompt
+        const firstName = currentData.name.split(' ')[0];
+        document.getElementById('reveal-text').innerText = `Time's up, ${firstName}... spill the tea!`;
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < gameData.length) {
+            loadCard();
+        } else {
+            document.getElementById('card-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -3,268 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Copilot Team Trivia</title>
+    <title>Exposed! 🫣</title>
     <style>
-        :root {
-            --bg-color: #0f172a; /* Deep slate blue */
-            --text-color: #f8fafc;
-            --accent-color: #38bdf8; /* Bright sky blue */
-            --card-bg: #1e293b;
-            --timer-color: #fbbf24; /* Amber */
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
         }
 
         .container {
-            background-color: var(--card-bg);
-            padding: 3rem 2rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: #ffffff;
+            width: 90%;
             max-width: 600px;
-            width: 100%;
-            border: 1px solid #334155;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
             text-align: center;
             position: relative;
+            overflow: hidden;
         }
 
-        h1 { color: var(--accent-color); font-size: 2.5rem; margin-bottom: 0.5rem; }
-        h2 { font-size: 2rem; margin-bottom: 1rem; color: #fff; }
-        
-        .question-text {
-            font-size: 1.5rem;
-            line-height: 1.4;
-            margin: 2rem 0;
-            padding: 1.5rem;
-            background: rgba(0,0,0,0.2);
-            border-radius: 8px;
-            border-left: 4px solid var(--accent-color);
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #ff4757;
+            font-size: 3rem;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px #ffeaa7;
         }
 
-        .btn {
-            display: inline-block;
+        p.subtitle {
+            font-size: 1.2rem;
+            color: #747d8c;
+            margin-bottom: 30px;
+        }
+
+        textarea {
             width: 100%;
-            padding: 16px;
-            margin: 10px 0;
-            background-color: #2563eb;
+            padding: 15px;
+            border: 2px dashed #a4b0be;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-family: 'Nunito', sans-serif;
+            box-sizing: border-box;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #ff4757;
+        }
+
+        button {
+            background: #ff4757;
             color: white;
             border: none;
-            border-radius: 8px;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Fredoka One', cursive;
+            border-radius: 50px;
             cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+            transition: transform 0.2s, background 0.2s;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: scale(1.05) translateY(-3px);
+            background: #ff6b81;
+        }
+
+        button:active {
+            transform: scale(0.95) translateY(0);
+        }
+
+        /* Screens */
+        #game-screen, #end-screen {
+            display: none;
+        }
+
+        /* Game Elements */
+        .player-reveal {
             font-size: 1.2rem;
             font-weight: bold;
-            transition: all 0.2s;
+            color: #747d8c;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        .btn:hover { background-color: #3b82f6; transform: translateY(-2px); }
-        .btn-secondary { background-color: #475569; }
-        .btn-secondary:hover { background-color: #64748b; }
-
-        .hidden { display: none !important; }
-
-        /* Timer Styles */
-        .timer-circle {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 6px solid #334155;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0 auto 20px auto;
-            color: var(--timer-color);
-            transition: color 0.3s;
+        #current-player {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
+            color: #3742fa;
+            margin: 10px 0;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .timer-warning { color: #ef4444; border-color: #ef4444; animation: pulse 1s infinite; }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        /* Reveal Styles */
-        .reveal-box {
-            background-color: #166534;
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
+        .question-box {
+            background: #f1f2f6;
+            padding: 30px;
+            border-radius: 15px;
             font-size: 1.5rem;
-            margin: 20px 0;
-            animation: slideDown 0.4s ease-out;
+            font-weight: 700;
+            margin: 30px 0;
+            border-left: 8px solid #ffa502;
+            animation: slideUp 0.5s ease;
         }
 
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
-        .progress { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem; }
+        @keyframes slideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="start-screen">
-        <h1>🎙️ Copilot Team Trivia</h1>
-        <p style="font-size: 1.2rem; color: #cbd5e1; margin-bottom: 2rem;">
-            21 Questions. 30 seconds to debate. <br>Who knows the team best?
-        </p>
-        <button class="btn" onclick="startGame()">Start the Game</button>
-    </div>
-
-    <div id="card-screen" class="hidden">
-        <div class="progress" id="progress-text">Card 1 / 21</div>
-        <h2 id="person-name">Name</h2>
+    <div class="container">
+        <h1>EXPOSED! 🫣</h1>
+        <p class="subtitle">Time to break the ice and reveal the truth...</p>
         
-        <div class="question-text" id="question-text">
-            Question goes here?
+        <div id="setup-screen">
+            <textarea id="player-input" rows="5" placeholder="Enter attendee names, separated by commas...&#10;(e.g., Sarah, Michael, Dwight, Jim)"></textarea>
+            <br>
+            <button onclick="startGame()">Start the Madness!</button>
         </div>
 
-        <div id="timer-area">
-            <div class="timer-circle" id="timer-display">30</div>
-            <button class="btn btn-secondary" id="start-timer-btn" onclick="startTimer()">⏱️ Start 30s Timer</button>
-        </div>
-
-        <div id="reveal-area" class="hidden">
-            <div class="reveal-box">
-                ☕ <span id="reveal-text">Name, time to spill the tea!</span>
+        <div id="game-screen">
+            <div class="player-reveal">The spotlight is on...</div>
+            <div id="current-player">???</div>
+            <div class="question-box" id="current-question">
+                Get ready for the first question!
             </div>
-            <button class="btn" onclick="nextQuestion()">Next Question ➡️</button>
+            <button onclick="nextVictim()">Next Victim 🎲</button>
         </div>
-        
-        <button class="btn btn-secondary hidden" id="manual-reveal-btn" onclick="triggerReveal()" style="margin-top: 10px; font-size: 1rem; padding: 10px;">Skip Timer & Spill the Tea</button>
+
+        <div id="end-screen">
+            <div id="current-player" style="color: #2ed573;">That's Everyone!</div>
+            <p class="subtitle">There are no more secrets left to expose.</p>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
     </div>
 
-    <div id="end-screen" class="hidden">
-        <h1>🎉 That's a wrap!</h1>
-        <p style="font-size: 1.2rem; margin-top: 20px;">Now we all know a little too much about each other.</p>
-        <button class="btn" onclick="location.reload()" style="margin-top: 30px;">Play Again</button>
-    </div>
-</div>
-
-<script>
-    const triviaData = [
-        { name: "Alan Secundo", q: "What city does Alan live in?" },
-        { name: "Annabelle Joynson", q: "What is Annabelle's favorite TV show?" },
-        { name: "Beatriz Donega", q: "What is Beatriz's favorite type of cuisine?" },
-        { name: "Bhavesh Jaisinghani", q: "How many languages does Bhavesh speak?" },
-        { name: "Chris Hodapp", q: "What was the name of Chris's first pet?" },
-        { name: "Dmitrii Zakharov", q: "What is Dmitrii's favorite sport to watch?" },
-        { name: "Jens Phanich", q: "What is Jens's favorite childhood movie?" },
-        { name: "Jonathan Sudarpo", q: "How many countries has Tobias visited?" },
-        { name: "Li Song", q: "What is Li's go-to karaoke song?" },
-        { name: "Ljupco Petkovski", q: "What kind of pet does Ljupco have?" },
-        { name: "Mathuriga Thavarajah", q: "What is Mathuriga's favorite food to cook?" },
-        { name: "Mihir Ahuja", q: "What instrument did Mihir play in high school?" },
-        { name: "Nana Asante-Apeatu", q: "How many books does Nana read per year?" },
-        { name: "Omar Alamrani", q: "What is Omar's favorite sports team?" },
-        { name: "Thomas Baker", q: "What is Thomas's standard coffee shop order?" },
-        { name: "Tiffany Sentosa", q: "What is Tiffany's nic-name?" },
-        { name: "Tushar Sharma", q: "What is Tushar's favorite board game?" },
-        { name: "Vitor Bichara", q: "What is Vitor's favorite holiday destination?" },
-        { name: "Warren Baltz", q: "What is Warren's favorite hobby on a Sunday?" }
-    ];
-
-    // Shuffle array so people don't know when their turn is coming
-    function shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    let gameData = [];
-    let currentIndex = 0;
-    let timerInterval;
-
-    function startGame() {
-        gameData = shuffle([...triviaData]);
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('card-screen').classList.remove('hidden');
-        loadCard();
-    }
-
-    function loadCard() {
-        const currentData = gameData[currentIndex];
+    <script>
+        // The Vault of Questions
         
-        // Reset UI
-        document.getElementById('reveal-area').classList.add('hidden');
-        document.getElementById('timer-area').classList.remove('hidden');
-        document.getElementById('start-timer-btn').classList.remove('hidden');
-        document.getElementById('manual-reveal-btn').classList.add('hidden');
-        
-        const timerDisplay = document.getElementById('timer-display');
-        timerDisplay.innerText = "30";
-        timerDisplay.classList.remove('timer-warning');
+        const questionsPool = [
+            "What is your secret movie love? (e.g. Pitch Perfect, High School Musical)",
+            "What is the most embarrassing song you secretly jam out to?",
+            "What is the weirdest thing you've ever eaten?",
+            "If you had to wear a warning label, what would yours say?",
+            "What is your most irrational fear?",
+            "What was your worst fashion phase?",
+            "If you were a potato, how would you like to be cooked?",
+            "What's a weird habit you have when you're alone?",
+            "Have you ever blamed a fart on a pet (or someone else)? Be honest.",
+            "What is the most ridiculous thing you believed as a kid?",
+            "What is your most useless hidden talent?",
+            "If someone narrated your life, who would you want it to be?",
+            "What's the most embarrassing thing you've done on a Zoom call?",
+            "If you could only eat one food for the rest of your life, what is it?",
+            "What's a reality TV show you would absolutely dominate?",
+            "What is the weirdest thing you've ever bought online late at night?",
+            "What is your most controversial food opinion? (e.g., pineapple belongs on pizza)",
+            "If your internet history from today was exposed, what's the weirdest thing you Googled?",
+            "Have you ever accidentally sent a text to the wrong person? What did it say?",
+            "What is a common word you constantly mispronounce or misspell?",
+            "If you were an Olympic athlete, what would your highly specific, non-athletic sport be?",
+            "What’s the most ridiculous excuse you’ve ever used to get out of doing something?",
+            "If you had a theme song that played every time you entered a room, what would it be?",
+            "Which fictional character do you relate to on a slightly embarrassing level?",
+            "What is the weirdest nickname you’ve ever been given?",
+            "What's a popular trend you completely fell for that makes you cringe now?",
+            "If you had to survive a zombie apocalypse using only three items currently on your desk, what are they?",
+            "What is the absolute worst haircut you've ever had?",
+            "If you had to give a 10-minute presentation with zero preparation, what niche topic would it be on?",
+            "What is a supposedly 'fun' activity that you secretly absolutely despise?"
+        ];
 
-        // Load Content
-        document.getElementById('progress-text').innerText = `Card ${currentIndex + 1} / ${gameData.length}`;
-        document.getElementById('person-name').innerText = currentData.name;
-        document.getElementById('question-text').innerText = currentData.q;
-    }
+        let players = [];
+        let availableQuestions = [];
 
-    function startTimer() {
-        document.getElementById('start-timer-btn').classList.add('hidden');
-        document.getElementById('manual-reveal-btn').classList.remove('hidden');
-        
-        let timeLeft = 30;
-        const timerDisplay = document.getElementById('timer-display');
-        
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            timerDisplay.innerText = timeLeft;
-            
-            if (timeLeft <= 10) {
-                timerDisplay.classList.add('timer-warning');
+        function startGame() {
+            const input = document.getElementById('player-input').value;
+            // Split by comma, trim whitespace, and remove empty entries
+            players = input.split(',').map(name => name.trim()).filter(name => name !== "");
+
+            if (players.length === 0) {
+                alert("You need to enter at least one victim... I mean, player!");
+                return;
             }
+
+            // Shuffle players so the order is random
+            players = shuffleArray(players);
+            // Copy the questions pool so we can remove them as they are asked
+            availableQuestions = [...questionsPool]; 
+
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
             
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                triggerReveal();
-            }
-        }, 1000);
-    }
-
-    function triggerReveal() {
-        clearInterval(timerInterval);
-        const currentData = gameData[currentIndex];
-        
-        document.getElementById('timer-area').classList.add('hidden');
-        document.getElementById('manual-reveal-btn').classList.add('hidden');
-        
-        const revealArea = document.getElementById('reveal-area');
-        revealArea.classList.remove('hidden');
-        
-        // Extract just the first name for the prompt
-        const firstName = currentData.name.split(' ')[0];
-        document.getElementById('reveal-text').innerText = `Time's up, ${firstName}... spill the tea!`;
-    }
-
-    function nextQuestion() {
-        currentIndex++;
-        if (currentIndex < gameData.length) {
-            loadCard();
-        } else {
-            document.getElementById('card-screen').classList.add('hidden');
-            document.getElementById('end-screen').classList.remove('hidden');
+            nextVictim();
         }
-    }
-</script>
 
+        function nextVictim() {
+            if (players.length === 0) {
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('end-screen').style.display = 'block';
+                return;
+            }
+
+            // Get next player and remove them from the array
+            const player = players.pop();
+
+            // Refill questions if we run out before players
+            if (availableQuestions.length === 0) {
+                availableQuestions = [...questionsPool];
+            }
+
+            // Get a random question and remove it from the available pool
+            const questionIndex = Math.floor(Math.random() * availableQuestions.length);
+            const question = availableQuestions.splice(questionIndex, 1)[0];
+
+            // Update UI
+            const playerEl = document.getElementById('current-player');
+            const questionEl = document.getElementById('current-question');
+            
+            // Little trick to re-trigger CSS animations
+            playerEl.style.animation = 'none';
+            questionEl.style.animation = 'none';
+            setTimeout(() => {
+                playerEl.innerText = player;
+                questionEl.innerText = question;
+                playerEl.style.animation = 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                questionEl.style.animation = 'slideUp 0.5s ease';
+            }, 10);
+        }
+
+        function resetGame() {
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('setup-screen').style.display = 'block';
+            document.getElementById('player-input').value = '';
+        }
+
+        // Helper function to shuffle an array (Fisher-Yates shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
 </body>
 </html>
