@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High5 Games</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: white;
+            font-size: 3rem;
+            text-align: center;
+            margin: 0 0 8px;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            margin-bottom: 36px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px 24px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: block;
+        }
+
+        .game-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-card .emoji {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .game-card h2 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.4rem;
+            margin: 0 0 8px;
+            color: #3742fa;
+        }
+
+        .game-card p {
+            margin: 0;
+            color: #747d8c;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>High5 Games</h1>
+        <p class="subtitle">Pick a game and break the ice with the team.</p>
+
+        <div class="grid">
+            <a class="game-card" href="index.html">
+                <div class="emoji">🫣</div>
+                <h2>Exposed!</h2>
+                <p>Random player, random embarrassing question. Time to spill the tea.</p>
+            </a>
+
+            <a class="game-card" href="hot-seat.html">
+                <div class="emoji">🔥</div>
+                <h2>Hot Seat</h2>
+                <p>Spotlight a player and answer fast — you've only got 20 seconds!</p>
+            </a>
+
+            <a class="game-card" href="two-truths.html">
+                <div class="emoji">🎭</div>
+                <h2>Two Truths &amp; A Lie</h2>
+                <p>Share two truths and one lie. Can the group spot the fib?</p>
+            </a>
+
+            <a class="game-card" href="never-have-i-ever.html">
+                <div class="emoji">✋</div>
+                <h2>Never Have I Ever</h2>
+                <p>Office edition. Put a finger down if you've done it!</p>
+            </a>
+
+            <a class="game-card" href="midnight-detective.html">
+                <div class="emoji">🕵️</div>
+                <h2>Midnight Detective</h2>
+                <p>Logic puzzles and a high-stakes whodunit. Can you solve the case?</p>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

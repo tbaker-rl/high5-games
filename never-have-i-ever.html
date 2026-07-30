@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Never Have I Ever ✋</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 90%;
+            max-width: 600px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #059669;
+            font-size: 2.6rem;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #747d8c;
+            margin-bottom: 24px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: #059669;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover { text-decoration: underline; }
+
+        button {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 14px 36px;
+            font-size: 1.3rem;
+            font-family: 'Fredoka One', cursive;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(5, 150, 105, 0.4);
+            transition: transform 0.2s, background 0.2s;
+            margin-top: 12px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #10b981;
+        }
+
+        button.btn-counter {
+            background: #e2e8f0;
+            color: #334155;
+            box-shadow: none;
+            font-size: 1.5rem;
+            padding: 8px 20px;
+            border-radius: 12px;
+            margin: 0 8px;
+        }
+
+        button.btn-counter:hover { background: #cbd5e1; transform: none; }
+
+        #game-screen, #end-screen { display: none; }
+
+        .rules-box {
+            background: #ecfdf5;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            border-left: 8px solid #34d399;
+            text-align: left;
+        }
+
+        .finger-counter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .finger-count {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            color: #059669;
+            min-width: 60px;
+        }
+
+        .finger-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .progress {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .statement-box {
+            background: #f0fdf4;
+            padding: 32px 24px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            border-left: 8px solid #059669;
+            animation: slideUp 0.5s ease;
+            line-height: 1.4;
+        }
+
+        @keyframes slideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a class="back-link" href="games.html">← Back to Games</a>
+        <h1>Never Have I Ever ✋</h1>
+        <p class="subtitle">Office edition. Put a finger down if you've done it!</p>
+
+        <div id="start-screen">
+            <div class="rules-box">
+                <strong>How to play:</strong><br>
+                1. Everyone starts with <strong>10 fingers up</strong> (or use the counter below).<br>
+                2. Read each statement aloud.<br>
+                3. If you've done it, put a finger down.<br>
+                4. Last person with fingers up wins — or just enjoy the stories!
+            </div>
+            <button onclick="startGame()">Let's Go!</button>
+        </div>
+
+        <div id="game-screen">
+            <div class="finger-counter">
+                <button class="btn-counter" onclick="changeFingers(-1)">−</button>
+                <div>
+                    <div class="finger-count" id="finger-count">10</div>
+                    <div class="finger-label">fingers up</div>
+                </div>
+                <button class="btn-counter" onclick="changeFingers(1)">+</button>
+            </div>
+
+            <div class="progress" id="progress-text">Statement 1 / 25</div>
+            <div class="statement-box" id="current-statement">Loading...</div>
+            <button onclick="nextStatement()">Next Statement ➡️</button>
+        </div>
+
+        <div id="end-screen">
+            <div style="font-family: 'Fredoka One', cursive; font-size: 2.5rem; color: #059669;">All Done! 🎉</div>
+            <p class="subtitle">Time to share the best stories from tonight. No judgment!</p>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const statementsPool = [
+            "Never have I ever sent a message to the wrong Slack channel.",
+            "Never have I ever pretended to understand something in a meeting.",
+            "Never have I ever joined a call while still in pajama bottoms.",
+            "Never have I ever forgotten to mute myself on a video call.",
+            "Never have I ever eaten lunch at my desk every day for a week.",
+            "Never have I ever accidentally replied-all to an email.",
+            "Never have I ever fallen asleep during a presentation.",
+            "Never have I ever blamed slow Wi-Fi for being late to a call.",
+            "Never have I ever looked up a coworker on LinkedIn before meeting them.",
+            "Never have I ever rehearsed a joke before a team standup.",
+            "Never have I ever used 'Sorry, bad connection' as an excuse to leave a call.",
+            "Never have I ever sent a screenshot that included something embarrassing in the background.",
+            "Never have I ever googled something a colleague just explained to me.",
+            "Never have I ever had a typo in a message to my boss.",
+            "Never have I ever taken a call from a bathroom.",
+            "Never have I ever forgotten someone's name right after being introduced.",
+            "Never have I ever celebrated closing a tab with 50+ open tabs.",
+            "Never have I ever pretended my camera was broken to skip video.",
+            "Never have I ever worked from a coffee shop and eavesdropped on a nearby meeting.",
+            "Never have I ever sent a 'Thanks!' email that started an endless reply chain.",
+            "Never have I ever accidentally shared my screen with something embarrassing open.",
+            "Never have I ever used the same password for work and personal accounts (don't do this!).",
+            "Never have I ever taken a meeting from bed.",
+            "Never have I ever said 'Let's circle back on that' without knowing what 'that' was.",
+            "Never have I ever eaten someone else's food from the office fridge."
+        ];
+
+        let gameOrder = [];
+        let currentIndex = 0;
+        let fingerCount = 10;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            gameOrder = shuffleArray([...statementsPool]);
+            currentIndex = 0;
+            fingerCount = 10;
+            document.getElementById('finger-count').textContent = fingerCount;
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            showStatement();
+        }
+
+        function showStatement() {
+            document.getElementById('progress-text').textContent =
+                `Statement ${currentIndex + 1} / ${gameOrder.length}`;
+            document.getElementById('current-statement').textContent =
+                "Never have I ever... " + gameOrder[currentIndex].replace(/^Never have I ever /i, "");
+
+            const box = document.getElementById('current-statement');
+            box.style.animation = 'none';
+            setTimeout(() => { box.style.animation = 'slideUp 0.5s ease'; }, 10);
+        }
+
+        function changeFingers(delta) {
+            fingerCount = Math.max(0, Math.min(10, fingerCount + delta));
+            document.getElementById('finger-count').textContent = fingerCount;
+        }
+
+        function nextStatement() {
+            currentIndex++;
+            if (currentIndex >= gameOrder.length) {
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('end-screen').style.display = 'block';
+                return;
+            }
+            showStatement();
+        }
+
+        function resetGame() {
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

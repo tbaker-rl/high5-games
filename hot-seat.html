@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hot Seat 🔥</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 90%;
+            max-width: 600px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #ea580c;
+            font-size: 2.8rem;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #747d8c;
+            margin-bottom: 24px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: #ea580c;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover { text-decoration: underline; }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #fdba74;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-family: 'Nunito', sans-serif;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #ea580c;
+        }
+
+        button {
+            background: #ea580c;
+            color: white;
+            border: none;
+            padding: 14px 36px;
+            font-size: 1.3rem;
+            font-family: 'Fredoka One', cursive;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(234, 88, 12, 0.4);
+            transition: transform 0.2s, background 0.2s;
+            margin-top: 16px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #f97316;
+        }
+
+        button.btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+            box-shadow: none;
+            font-size: 1rem;
+            padding: 10px 20px;
+            margin-top: 8px;
+        }
+
+        button.btn-secondary:hover { background: #cbd5e1; transform: none; }
+
+        #game-screen, #reveal-screen, #end-screen { display: none; }
+
+        .progress {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .player-label {
+            font-size: 1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #94a3b8;
+        }
+
+        #current-player {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            color: #dc2626;
+            margin: 8px 0 20px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .prompt-box {
+            background: #fff7ed;
+            padding: 24px;
+            border-radius: 15px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            border-left: 8px solid #f97316;
+            animation: slideUp 0.5s ease;
+        }
+
+        .timer-circle {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 6px solid #fed7aa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0 auto 16px;
+            color: #ea580c;
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .timer-warning {
+            color: #dc2626;
+            border-color: #dc2626;
+            animation: pulse 1s infinite;
+        }
+
+        .reveal-box {
+            background: #166534;
+            color: white;
+            padding: 24px;
+            border-radius: 15px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 20px 0;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a class="back-link" href="games.html">← Back to Games</a>
+        <h1>Hot Seat 🔥</h1>
+        <p class="subtitle">You're in the spotlight. Answer fast — the clock is ticking!</p>
+
+        <div id="setup-screen">
+            <textarea id="player-input" rows="5" placeholder="Enter attendee names, separated by commas..."></textarea>
+            <br>
+            <button onclick="startGame()">Light the Fire!</button>
+        </div>
+
+        <div id="game-screen">
+            <div class="progress" id="progress-text">Round 1 / 5</div>
+            <div class="player-label">In the hot seat...</div>
+            <div id="current-player">???</div>
+            <div class="prompt-box" id="current-prompt">Get ready!</div>
+
+            <div id="timer-area">
+                <div class="timer-circle" id="timer-display">20</div>
+                <button onclick="startTimer()">⏱️ Start 20s Timer</button>
+                <button class="btn-secondary" onclick="skipTimer()">Skip Timer</button>
+            </div>
+        </div>
+
+        <div id="reveal-screen">
+            <div class="player-label">Time's up!</div>
+            <div id="reveal-player" style="font-family: 'Fredoka One', cursive; font-size: 2rem; color: #dc2626; margin: 12px 0;"></div>
+            <div class="reveal-box" id="reveal-text">Your answer!</div>
+            <button onclick="nextRound()">Next Round ➡️</button>
+        </div>
+
+        <div id="end-screen">
+            <div id="current-player" style="color: #16a34a; font-family: 'Fredoka One', cursive; font-size: 2.5rem;">That's Everyone!</div>
+            <p class="subtitle">The hot seat has cooled off. For now.</p>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const promptsPool = [
+            "What's your go-to karaoke song?",
+            "Coffee or tea — and how do you take it?",
+            "What's the best meal you've ever had?",
+            "What's a TV show you could rewatch forever?",
+            "What's your most-used emoji?",
+            "What's the last thing that made you laugh out loud?",
+            "Beach vacation or mountain cabin?",
+            "What's a hobby you've always wanted to try?",
+            "What's your comfort food?",
+            "Early bird or night owl?",
+            "What's the best concert or live event you've been to?",
+            "What's a skill you're secretly proud of?",
+            "What's your favorite season and why?",
+            "What's the best advice you've ever received?",
+            "Dogs, cats, or something else?",
+            "What's your ideal way to spend a Sunday?",
+            "What's a place you've always wanted to visit?",
+            "What's your guilty pleasure snack?",
+            "What's the last book or article you enjoyed?",
+            "What's one thing on your bucket list?",
+            "What's your favorite holiday tradition?",
+            "What's the best gift you've ever received?",
+            "What's a movie everyone should watch at least once?",
+            "What's your superpower at work?",
+            "What's the weirdest food combination you actually enjoy?"
+        ];
+
+        let players = [];
+        let availablePrompts = [];
+        let totalRounds = 0;
+        let currentRound = 0;
+        let currentPlayer = "";
+        let currentPrompt = "";
+        let timerInterval;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            const input = document.getElementById('player-input').value;
+            players = input.split(',').map(n => n.trim()).filter(n => n !== "");
+
+            if (players.length === 0) {
+                alert("Enter at least one player name!");
+                return;
+            }
+
+            players = shuffleArray(players);
+            availablePrompts = shuffleArray([...promptsPool]);
+            totalRounds = players.length;
+            currentRound = 0;
+
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            loadRound();
+        }
+
+        function loadRound() {
+            clearInterval(timerInterval);
+
+            currentPlayer = players.pop();
+            currentRound++;
+
+            if (availablePrompts.length === 0) {
+                availablePrompts = shuffleArray([...promptsPool]);
+            }
+            currentPrompt = availablePrompts.pop();
+
+            document.getElementById('progress-text').textContent =
+                `Round ${currentRound} / ${totalRounds}`;
+            document.getElementById('current-player').textContent = currentPlayer;
+            document.getElementById('current-prompt').textContent = currentPrompt;
+
+            const timerDisplay = document.getElementById('timer-display');
+            timerDisplay.textContent = "20";
+            timerDisplay.classList.remove('timer-warning');
+
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('reveal-screen').style.display = 'none';
+        }
+
+        function startTimer() {
+            let timeLeft = 20;
+            const timerDisplay = document.getElementById('timer-display');
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 5) {
+                    timerDisplay.classList.add('timer-warning');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showReveal();
+                }
+            }, 1000);
+        }
+
+        function skipTimer() {
+            clearInterval(timerInterval);
+            showReveal();
+        }
+
+        function showReveal() {
+            const firstName = currentPlayer.split(' ')[0];
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('reveal-screen').style.display = 'block';
+            document.getElementById('reveal-player').textContent = currentPlayer;
+            document.getElementById('reveal-text').textContent =
+                `Time's up, ${firstName}! How did you do?`;
+        }
+
+        function nextRound() {
+            if (players.length === 0) {
+                document.getElementById('reveal-screen').style.display = 'none';
+                document.getElementById('end-screen').style.display = 'block';
+                return;
+            }
+            loadRound();
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('setup-screen').style.display = 'block';
+            document.getElementById('player-input').value = '';
+        }
+    </script>
+</body>
+</html>
