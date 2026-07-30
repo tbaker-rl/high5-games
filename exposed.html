@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exposed! 🫣</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 90%;
+            max-width: 600px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #ff4757;
+            font-size: 3rem;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px #ffeaa7;
+        }
+
+        p.subtitle {
+            font-size: 1.2rem;
+            color: #747d8c;
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #a4b0be;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-family: 'Nunito', sans-serif;
+            box-sizing: border-box;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #ff4757;
+        }
+
+        button {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Fredoka One', cursive;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+            transition: transform 0.2s, background 0.2s;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: scale(1.05) translateY(-3px);
+            background: #ff6b81;
+        }
+
+        button:active {
+            transform: scale(0.95) translateY(0);
+        }
+
+        /* Screens */
+        #game-screen, #end-screen {
+            display: none;
+        }
+
+        /* Game Elements */
+        .player-reveal {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #747d8c;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #current-player {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
+            color: #3742fa;
+            margin: 10px 0;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .question-box {
+            background: #f1f2f6;
+            padding: 30px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 30px 0;
+            border-left: 8px solid #ffa502;
+            animation: slideUp 0.5s ease;
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>EXPOSED! 🫣</h1>
+        <p class="subtitle">Time to break the ice and reveal the truth...</p>
+        
+        <div id="setup-screen">
+            <textarea id="player-input" rows="5" placeholder="Enter attendee names, separated by commas...&#10;(e.g., Sarah, Michael, Dwight, Jim)"></textarea>
+            <br>
+            <button onclick="startGame()">Start the Madness!</button>
+        </div>
+
+        <div id="game-screen">
+            <div class="player-reveal">The spotlight is on...</div>
+            <div id="current-player">???</div>
+            <div class="question-box" id="current-question">
+                Get ready for the first question!
+            </div>
+            <button onclick="nextVictim()">Next Victim 🎲</button>
+        </div>
+
+        <div id="end-screen">
+            <div id="current-player" style="color: #2ed573;">That's Everyone!</div>
+            <p class="subtitle">There are no more secrets left to expose.</p>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // The Vault of Questions
+        
+        const questionsPool = [
+            "What is your secret embarrassing movie love?",
+            "What is the most embarrassing song you secretly jam out to?",
+            "What is the weirdest thing you've ever eaten?",
+            "If you had to wear a warning label, what would yours say?",
+            "What is your most irrational fear?",
+            "What was your worst fashion phase?",
+            "If you were a potato, how would you like to be cooked?",
+            "What's a weird habit you have when you're alone?",
+            "Have you ever blamed a fart on a pet (or someone else)? Be honest.",
+            "What is the most ridiculous thing you believed as a kid?",
+            "If someone narrated your life, who would you want it to be?",
+            "What's the most embarrassing thing you've done on a Zoom call?",
+            "If you could only eat one food for the rest of your life, what is it?",
+            "What's a reality TV show you would absolutely dominate?",
+            "What is the weirdest thing you've ever bought online late at night?",
+            "What is your most controversial food opinion? (e.g., pineapple belongs on pizza)",
+            "If your internet history from today was exposed, what's the weirdest thing you Googled? (make it safe for work)",
+            "Have you ever accidentally sent a text to the wrong person? What did it say?",
+            "If you were an to be in a Guinness World Records , what would your highly specific achievement be?",
+            "If you had a theme song that played every time you entered a room, what would it be?",
+            "Which fictional character do you relate to on a slightly embarrassing level?",
+            "What is the weirdest nickname you’ve ever been given?",
+            "What's a popular trend you completely fell for that makes you cringe now?",
+            "If you had to survive a zombie apocalypse using only three items, what are they?",
+            "What is the absolute worst haircut you've ever had?",
+            "If you had to give a 10-minute presentation with zero preparation, what niche topic would it be on?",
+            "What is a supposedly 'fun' activity that you secretly absolutely despise?"
+        ];
+
+        let players = [];
+        let availableQuestions = [];
+
+        function startGame() {
+            const input = document.getElementById('player-input').value;
+            // Split by comma, trim whitespace, and remove empty entries
+            players = input.split(',').map(name => name.trim()).filter(name => name !== "");
+
+            if (players.length === 0) {
+                alert("You need to enter at least one victim... I mean, player!");
+                return;
+            }
+
+            // Shuffle players so the order is random
+            players = shuffleArray(players);
+            // Copy the questions pool so we can remove them as they are asked
+            availableQuestions = [...questionsPool]; 
+
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            
+            nextVictim();
+        }
+
+        function nextVictim() {
+            if (players.length === 0) {
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('end-screen').style.display = 'block';
+                return;
+            }
+
+            // Get next player and remove them from the array
+            const player = players.pop();
+
+            // Refill questions if we run out before players
+            if (availableQuestions.length === 0) {
+                availableQuestions = [...questionsPool];
+            }
+
+            // Get a random question and remove it from the available pool
+            const questionIndex = Math.floor(Math.random() * availableQuestions.length);
+            const question = availableQuestions.splice(questionIndex, 1)[0];
+
+            // Update UI
+            const playerEl = document.getElementById('current-player');
+            const questionEl = document.getElementById('current-question');
+            
+            // Little trick to re-trigger CSS animations
+            playerEl.style.animation = 'none';
+            questionEl.style.animation = 'none';
+            setTimeout(() => {
+                playerEl.innerText = player;
+                questionEl.innerText = question;
+                playerEl.style.animation = 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                questionEl.style.animation = 'slideUp 0.5s ease';
+            }, 10);
+        }
+
+        function resetGame() {
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('setup-screen').style.display = 'block';
+            document.getElementById('player-input').value = '';
+        }
+
+        // Helper function to shuffle an array (Fisher-Yates shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+</body>
+</html>
