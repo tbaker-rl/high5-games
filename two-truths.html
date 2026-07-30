@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Truths &amp; A Lie 🎭</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 90%;
+            max-width: 600px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #4f46e5;
+            font-size: 2.4rem;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #747d8c;
+            margin-bottom: 24px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover { text-decoration: underline; }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #a5b4fc;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-family: 'Nunito', sans-serif;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 14px 36px;
+            font-size: 1.2rem;
+            font-family: 'Fredoka One', cursive;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+            transition: transform 0.2s, background 0.2s;
+            margin-top: 12px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #6366f1;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #share-screen, #guess-screen, #reveal-screen, #end-screen { display: none; }
+
+        .progress {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .player-label {
+            font-size: 1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #94a3b8;
+        }
+
+        #current-player {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            color: #3730a3;
+            margin: 8px 0 20px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .instruction-box {
+            background: #eef2ff;
+            padding: 24px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            border-left: 8px solid #818cf8;
+            line-height: 1.5;
+        }
+
+        .statement-slots {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .statement-slot {
+            background: #f1f5f9;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .statement-slot:hover {
+            border-color: #818cf8;
+            background: #eef2ff;
+        }
+
+        .statement-slot.selected {
+            border-color: #4f46e5;
+            background: #eef2ff;
+            transform: scale(1.02);
+        }
+
+        .statement-slot.correct {
+            border-color: #16a34a;
+            background: #dcfce7;
+        }
+
+        .statement-slot.wrong {
+            border-color: #dc2626;
+            background: #fee2e2;
+        }
+
+        .phase-label {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #6366f1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .result-box {
+            padding: 24px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 20px 0;
+            animation: slideUp 0.5s ease;
+        }
+
+        .result-box.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .result-box.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a class="back-link" href="games.html">← Back to Games</a>
+        <h1>Two Truths &amp; A Lie 🎭</h1>
+        <p class="subtitle">Two truths, one lie. Can the group spot the fib?</p>
+
+        <div id="setup-screen">
+            <textarea id="player-input" rows="5" placeholder="Enter attendee names, separated by commas..."></textarea>
+            <br>
+            <button onclick="startGame()">Start the Game</button>
+        </div>
+
+        <div id="share-screen">
+            <div class="progress" id="progress-text">Player 1 / 5</div>
+            <div class="player-label">Spotlight on...</div>
+            <div id="current-player">???</div>
+            <div class="instruction-box">
+                Share <strong>two truths</strong> and <strong>one lie</strong> out loud.<br>
+                Number them 1, 2, and 3 as you go!
+            </div>
+            <button onclick="startGuessing()">Ready — Group, Start Guessing!</button>
+        </div>
+
+        <div id="guess-screen">
+            <div class="phase-label">Step 1: What does the group think is the lie?</div>
+            <div class="statement-slots" id="guess-slots">
+                <div class="statement-slot" onclick="selectGuess(1)">Statement 1</div>
+                <div class="statement-slot" onclick="selectGuess(2)">Statement 2</div>
+                <div class="statement-slot" onclick="selectGuess(3)">Statement 3</div>
+            </div>
+            <button id="confirm-guess-btn" onclick="confirmGuess()" disabled>Confirm Group Guess</button>
+        </div>
+
+        <div id="reveal-screen">
+            <div class="phase-label">Step 2: Player, reveal the actual lie!</div>
+            <div class="statement-slots" id="reveal-slots">
+                <div class="statement-slot" onclick="selectLie(1)">Statement 1</div>
+                <div class="statement-slot" onclick="selectLie(2)">Statement 2</div>
+                <div class="statement-slot" onclick="selectLie(3)">Statement 3</div>
+            </div>
+            <button id="confirm-lie-btn" onclick="confirmLie()" disabled>Reveal the Lie</button>
+        </div>
+
+        <div id="result-screen" style="display: none;">
+            <div class="result-box" id="result-box">Result!</div>
+            <button onclick="nextPlayer()">Next Player ➡️</button>
+        </div>
+
+        <div id="end-screen">
+            <div style="font-family: 'Fredoka One', cursive; font-size: 2.5rem; color: #16a34a;">Game Over!</div>
+            <p class="subtitle">Everyone had their moment in the spotlight.</p>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        let players = [];
+        let totalPlayers = 0;
+        let currentIndex = 0;
+        let groupGuess = null;
+        let actualLie = null;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            const input = document.getElementById('player-input').value;
+            players = input.split(',').map(n => n.trim()).filter(n => n !== "");
+
+            if (players.length === 0) {
+                alert("Enter at least one player name!");
+                return;
+            }
+
+            players = shuffleArray(players);
+            totalPlayers = players.length;
+            currentIndex = 0;
+
+            document.getElementById('setup-screen').style.display = 'none';
+            loadPlayer();
+        }
+
+        function loadPlayer() {
+            groupGuess = null;
+            actualLie = null;
+
+            document.getElementById('share-screen').style.display = 'block';
+            document.getElementById('guess-screen').style.display = 'none';
+            document.getElementById('reveal-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'none';
+
+            document.getElementById('progress-text').textContent =
+                `Player ${currentIndex + 1} / ${totalPlayers}`;
+            document.getElementById('current-player').textContent = players[currentIndex];
+
+            resetSlots('guess-slots');
+            resetSlots('reveal-slots');
+            document.getElementById('confirm-guess-btn').disabled = true;
+            document.getElementById('confirm-lie-btn').disabled = true;
+        }
+
+        function resetSlots(containerId) {
+            const slots = document.getElementById(containerId).children;
+            for (let slot of slots) {
+                slot.classList.remove('selected', 'correct', 'wrong');
+            }
+        }
+
+        function startGuessing() {
+            document.getElementById('share-screen').style.display = 'none';
+            document.getElementById('guess-screen').style.display = 'block';
+        }
+
+        function selectGuess(num) {
+            groupGuess = num;
+            const slots = document.getElementById('guess-slots').children;
+            for (let i = 0; i < slots.length; i++) {
+                slots[i].classList.toggle('selected', i + 1 === num);
+            }
+            document.getElementById('confirm-guess-btn').disabled = false;
+        }
+
+        function confirmGuess() {
+            document.getElementById('guess-screen').style.display = 'none';
+            document.getElementById('reveal-screen').style.display = 'block';
+        }
+
+        function selectLie(num) {
+            actualLie = num;
+            const slots = document.getElementById('reveal-slots').children;
+            for (let i = 0; i < slots.length; i++) {
+                slots[i].classList.toggle('selected', i + 1 === num);
+            }
+            document.getElementById('confirm-lie-btn').disabled = false;
+        }
+
+        function confirmLie() {
+            const guessSlots = document.getElementById('guess-slots').children;
+            const revealSlots = document.getElementById('reveal-slots').children;
+            const matched = groupGuess === actualLie;
+
+            for (let i = 0; i < 3; i++) {
+                const num = i + 1;
+                if (num === actualLie) {
+                    revealSlots[i].classList.add('correct');
+                } else if (num === groupGuess && !matched) {
+                    guessSlots[i].classList.add('wrong');
+                }
+            }
+
+            const resultBox = document.getElementById('result-box');
+            const player = players[currentIndex];
+            if (matched) {
+                resultBox.className = 'result-box success';
+                resultBox.textContent = `🎉 The group got it! Statement ${actualLie} was the lie. Nice work, detectives!`;
+            } else {
+                resultBox.className = 'result-box fail';
+                resultBox.textContent = `😏 Fooled ya! The lie was Statement ${actualLie}, but the group guessed Statement ${groupGuess}. ${player} wins this round!`;
+            }
+
+            document.getElementById('reveal-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+        }
+
+        function nextPlayer() {
+            currentIndex++;
+            if (currentIndex >= totalPlayers) {
+                document.getElementById('result-screen').style.display = 'none';
+                document.getElementById('share-screen').style.display = 'none';
+                document.getElementById('end-screen').style.display = 'block';
+                return;
+            }
+            loadPlayer();
+        }
+
+        function resetGame() {
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('setup-screen').style.display = 'block';
+            document.getElementById('player-input').value = '';
+        }
+    </script>
+</body>
+</html>
