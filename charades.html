@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charades 🎬</title>
+    <link rel="stylesheet" href="assets/shared.css">
+    <style>
+        :root {
+            --accent: #db2777;
+            --accent-dark: #be185d;
+            --accent-soft: #fdf2f8;
+            --accent-border: #f9a8d4;
+            --bg-start: #ec4899;
+            --bg-end: #9d174d;
+        }
+
+        .card-category {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 5px 14px;
+            border-radius: 999px;
+            margin-bottom: 14px;
+        }
+
+        .card-text {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.1rem;
+            color: var(--accent-dark);
+            line-height: 1.2;
+        }
+
+        .card {
+            background: var(--accent-soft);
+            border: 3px solid var(--accent-border);
+            border-radius: 18px;
+            padding: 28px 22px;
+            margin-bottom: 20px;
+            animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .turn-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .turn-actions button { margin-top: 0; width: 100%; }
+
+        .btn-skip {
+            background: #64748b;
+            box-shadow: none;
+        }
+
+        .btn-skip:hover { background: #475569; }
+
+        .tally {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 18px;
+            font-weight: 800;
+            color: var(--muted);
+        }
+
+        .tally span { color: var(--accent-dark); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a class="back-link" href="index.html">← Back to Games</a>
+        <h1>Charades 🎬</h1>
+        <p class="subtitle">Act it out, no talking. Your team guesses before the clock runs out.</p>
+
+        <div class="screen active" id="setup-screen">
+            <div class="setup-field">
+                <label for="team-input">Team names (separated by commas)</label>
+                <textarea id="team-input" rows="3" placeholder="e.g. Red Team, Blue Team"></textarea>
+            </div>
+            <div class="setup-row">
+                <div class="setup-field">
+                    <label for="seconds-input">Seconds per turn</label>
+                    <input type="number" id="seconds-input" value="60" min="15" max="180">
+                </div>
+                <div class="setup-field">
+                    <label for="rounds-input">Turns per team</label>
+                    <input type="number" id="rounds-input" value="2" min="1" max="10">
+                </div>
+            </div>
+            <button onclick="startGame()">Start Acting</button>
+        </div>
+
+        <div class="screen" id="intro-screen">
+            <div class="scoreboard" id="intro-scoreboard"></div>
+            <div class="progress" id="intro-progress">Round 1 of 2</div>
+            <div class="label">Up next</div>
+            <div class="headline" id="intro-team">Team</div>
+            <div class="note-box">
+                Pick one actor and hand them the device. Everyone else, look away.
+                The actor taps below when the team is ready to guess.
+            </div>
+            <button onclick="beginTurn()">Show Card &amp; Start Clock</button>
+        </div>
+
+        <div class="screen" id="play-screen">
+            <div class="timer-circle" id="timer-display">60</div>
+            <div class="card">
+                <div class="card-category" id="card-category">Category</div>
+                <div class="card-text" id="card-text">Loading...</div>
+            </div>
+            <div class="turn-actions">
+                <button onclick="gotIt()">Got it! +1</button>
+                <button class="btn-skip" onclick="skipCard()">Skip</button>
+            </div>
+            <div class="tally">
+                <div>Correct: <span id="tally-correct">0</span></div>
+                <div>Skipped: <span id="tally-skipped">0</span></div>
+            </div>
+            <button class="btn-secondary" onclick="endTurnEarly()">End turn early</button>
+        </div>
+
+        <div class="screen" id="summary-screen">
+            <div class="label">Time's up</div>
+            <div class="headline" id="summary-team">Team</div>
+            <div class="prompt-box" id="summary-text">Scored 0 this turn.</div>
+            <div class="scoreboard" id="summary-scoreboard"></div>
+            <button onclick="nextTurn()" id="summary-btn">Next Team →</button>
+        </div>
+
+        <div class="screen" id="end-screen">
+            <div class="winner-box">
+                <div class="winner-title" id="winner-text">Winner!</div>
+                <ol class="standings" id="standings"></ol>
+            </div>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script src="assets/shared.js"></script>
+    <script>
+        const prompts = [
+            { text: 'Titanic', category: 'Films' },
+            { text: 'Jurassic Park', category: 'Films' },
+            { text: 'The Lion King', category: 'Films' },
+            { text: 'Star Wars', category: 'Films' },
+            { text: 'Harry Potter', category: 'Films' },
+            { text: 'Jaws', category: 'Films' },
+            { text: 'Frozen', category: 'Films' },
+            { text: 'Rocky', category: 'Films' },
+            { text: 'Ghostbusters', category: 'Films' },
+            { text: 'The Matrix', category: 'Films' },
+            { text: 'Toy Story', category: 'Films' },
+            { text: 'Indiana Jones', category: 'Films' },
+
+            { text: 'Brushing your teeth', category: 'Actions' },
+            { text: 'Riding a bike uphill', category: 'Actions' },
+            { text: 'Making a cup of coffee', category: 'Actions' },
+            { text: 'Tying your shoelaces', category: 'Actions' },
+            { text: 'Swimming front crawl', category: 'Actions' },
+            { text: 'Painting a ceiling', category: 'Actions' },
+            { text: 'Taking a selfie', category: 'Actions' },
+            { text: 'Parallel parking', category: 'Actions' },
+            { text: 'Blowing out birthday candles', category: 'Actions' },
+            { text: 'Juggling', category: 'Actions' },
+            { text: 'Shovelling snow', category: 'Actions' },
+            { text: 'Threading a needle', category: 'Actions' },
+
+            { text: 'Joining a video call late', category: 'Office Life' },
+            { text: 'Fixing the printer', category: 'Office Life' },
+            { text: 'Presenting a slide deck', category: 'Office Life' },
+            { text: 'Realising you replied to all', category: 'Office Life' },
+            { text: 'The coffee machine is empty', category: 'Office Life' },
+            { text: 'Hunting for a free desk', category: 'Office Life' },
+            { text: 'Whiteboard brainstorm', category: 'Office Life' },
+            { text: 'Talking while still on mute', category: 'Office Life' },
+            { text: 'Laptop battery at one percent', category: 'Office Life' },
+            { text: 'Adjusting a standing desk', category: 'Office Life' },
+            { text: 'An awkward handshake', category: 'Office Life' },
+            { text: 'Calling tech support', category: 'Office Life' },
+
+            { text: 'Penguin', category: 'Animals' },
+            { text: 'Giraffe', category: 'Animals' },
+            { text: 'Kangaroo', category: 'Animals' },
+            { text: 'Octopus', category: 'Animals' },
+            { text: 'Sloth', category: 'Animals' },
+            { text: 'Flamingo', category: 'Animals' },
+            { text: 'Elephant', category: 'Animals' },
+            { text: 'Crab', category: 'Animals' },
+            { text: 'Snake', category: 'Animals' },
+            { text: 'Owl', category: 'Animals' },
+            { text: 'Gorilla', category: 'Animals' },
+            { text: 'Tyrannosaurus rex', category: 'Animals' },
+
+            { text: 'Spill the beans', category: 'Idioms' },
+            { text: 'Break the ice', category: 'Idioms' },
+            { text: 'Hit the nail on the head', category: 'Idioms' },
+            { text: 'Under the weather', category: 'Idioms' },
+            { text: 'A piece of cake', category: 'Idioms' },
+            { text: 'Getting cold feet', category: 'Idioms' },
+            { text: 'Raining cats and dogs', category: 'Idioms' },
+            { text: 'Back to square one', category: 'Idioms' },
+            { text: 'Burning the midnight oil', category: 'Idioms' },
+            { text: 'Barking up the wrong tree', category: 'Idioms' },
+            { text: 'Let the cat out of the bag', category: 'Idioms' },
+            { text: 'Skating on thin ice', category: 'Idioms' }
+        ];
+
+        const scores = new TeamScores();
+        let deck = [];
+        let secondsPerTurn = 60;
+        let turnsPerTeam = 2;
+        let turnNumber = 0;
+        let totalTurns = 0;
+        let turnCorrect = 0;
+        let turnSkipped = 0;
+        let timer = null;
+
+        function readNumber(id, fallback, min, max) {
+            const value = parseInt(document.getElementById(id).value, 10);
+            if (Number.isNaN(value)) return fallback;
+            return Math.min(Math.max(value, min), max);
+        }
+
+        function startGame() {
+            const names = parseNames(document.getElementById('team-input').value);
+            if (names.length === 0) {
+                alert('Enter at least one team name to get started.');
+                return;
+            }
+
+            secondsPerTurn = readNumber('seconds-input', 60, 15, 180);
+            turnsPerTeam = readNumber('rounds-input', 2, 1, 10);
+
+            scores.init(names);
+            deck = shuffleArray(prompts);
+            turnNumber = 0;
+            totalTurns = names.length * turnsPerTeam;
+
+            showIntro();
+        }
+
+        function currentTeamIndex() {
+            return turnNumber % scores.count;
+        }
+
+        function currentRound() {
+            return Math.floor(turnNumber / scores.count) + 1;
+        }
+
+        function showIntro() {
+            document.getElementById('intro-progress').textContent =
+                `Round ${currentRound()} of ${turnsPerTeam}`;
+            document.getElementById('intro-team').textContent = scores.name(currentTeamIndex());
+            scores.renderScoreboard(document.getElementById('intro-scoreboard'));
+            showScreen('intro-screen');
+        }
+
+        function beginTurn() {
+            turnCorrect = 0;
+            turnSkipped = 0;
+            updateTally();
+
+            if (timer) timer.stop();
+            timer = createTimer({
+                seconds: secondsPerTurn,
+                display: document.getElementById('timer-display'),
+                warnAt: 10,
+                onDone: finishTurn
+            });
+
+            showScreen('play-screen');
+            dealCard();
+            timer.start();
+        }
+
+        function dealCard() {
+            if (deck.length === 0) deck = shuffleArray(prompts);
+            const card = deck.pop();
+
+            document.getElementById('card-category').textContent = card.category;
+            document.getElementById('card-text').textContent = card.text;
+            replayAnimation(
+                document.querySelector('#play-screen .card'),
+                'popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            );
+        }
+
+        function updateTally() {
+            document.getElementById('tally-correct').textContent = turnCorrect;
+            document.getElementById('tally-skipped').textContent = turnSkipped;
+        }
+
+        function gotIt() {
+            turnCorrect++;
+            scores.award(currentTeamIndex());
+            updateTally();
+            dealCard();
+        }
+
+        function skipCard() {
+            turnSkipped++;
+            updateTally();
+            dealCard();
+        }
+
+        function endTurnEarly() {
+            if (timer) timer.stop();
+            finishTurn();
+        }
+
+        function finishTurn() {
+            if (timer) timer.stop();
+
+            const teamName = scores.name(currentTeamIndex());
+            document.getElementById('summary-team').textContent = teamName;
+            document.getElementById('summary-text').textContent =
+                `${turnCorrect} correct, ${turnSkipped} skipped.`;
+            scores.renderScoreboard(document.getElementById('summary-scoreboard'));
+
+            const isLastTurn = turnNumber + 1 >= totalTurns;
+            document.getElementById('summary-btn').textContent =
+                isLastTurn ? 'See Final Scores →' : 'Next Team →';
+
+            showScreen('summary-screen');
+        }
+
+        function nextTurn() {
+            turnNumber++;
+            if (turnNumber >= totalTurns) {
+                endGame();
+                return;
+            }
+            showIntro();
+        }
+
+        function endGame() {
+            document.getElementById('winner-text').textContent = scores.winnerText();
+            scores.renderStandings(document.getElementById('standings'));
+            showScreen('end-screen');
+        }
+
+        function resetGame() {
+            if (timer) timer.stop();
+            showScreen('setup-screen');
+        }
+    </script>
+</body>
+</html>

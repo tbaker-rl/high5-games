@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acronym Antics 🔤</title>
+    <link rel="stylesheet" href="assets/shared.css">
+    <style>
+        :root {
+            --accent: #0d9488;
+            --accent-dark: #0f766e;
+            --accent-soft: #f0fdfa;
+            --accent-border: #5eead4;
+            --bg-start: #14b8a6;
+            --bg-end: #115e59;
+        }
+
+        .acronym {
+            font-family: 'Fredoka One', cursive;
+            font-size: 4.5rem;
+            letter-spacing: 0.15em;
+            color: var(--accent-dark);
+            margin: 8px 0 4px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .frame-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        .frame-text strong { color: var(--accent-dark); }
+
+        @media (max-width: 560px) {
+            .acronym { font-size: 3.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a class="back-link" href="index.html">← Back to Games</a>
+        <h1>Acronym Antics 🔤</h1>
+        <p class="subtitle">Invent the funniest meaning for a random acronym. The room votes.</p>
+
+        <div class="screen active" id="setup-screen">
+            <div class="setup-field">
+                <label for="team-input">Team names (separated by commas)</label>
+                <textarea id="team-input" rows="3" placeholder="e.g. Red Team, Blue Team, The Debuggers"></textarea>
+            </div>
+            <div class="setup-row">
+                <div class="setup-field">
+                    <label for="rounds-input">Rounds</label>
+                    <input type="number" id="rounds-input" value="4" min="1" max="12">
+                </div>
+                <div class="setup-field">
+                    <label for="seconds-input">Seconds to write</label>
+                    <input type="number" id="seconds-input" value="90" min="30" max="300">
+                </div>
+            </div>
+            <button onclick="startGame()">Start Round One</button>
+        </div>
+
+        <div class="screen" id="write-screen">
+            <div class="scoreboard" id="write-scoreboard"></div>
+            <div class="progress" id="write-progress">Round 1 of 4</div>
+            <div class="label">Your acronym is</div>
+            <div class="acronym" id="acronym-display">ABC</div>
+            <p class="frame-text">It stands for <strong id="frame-display">something</strong></p>
+            <div class="timer-circle" id="timer-display">90</div>
+            <div class="note-box">
+                Every team writes down what the letters stand for. Funniest wins the round,
+                so lean into it. Keep it hidden until the reading phase.
+            </div>
+            <button onclick="finishWriting()">Everyone's Done →</button>
+        </div>
+
+        <div class="screen" id="share-screen">
+            <div class="progress" id="share-progress">Reader 1 of 3</div>
+            <div class="label">Read yours out loud</div>
+            <div class="headline" id="share-team">Team</div>
+            <div class="prompt-box">
+                <span id="share-acronym">ABC</span> stands for...
+            </div>
+            <button onclick="nextReader()" id="share-btn">Next Reader →</button>
+        </div>
+
+        <div class="screen" id="vote-screen">
+            <div class="label">Time to vote</div>
+            <div class="headline">Who nailed it?</div>
+            <p class="subtitle">Everyone points at their favourite. Tap the winning team.</p>
+            <div class="team-buttons" id="team-buttons"></div>
+            <button class="btn-secondary" onclick="skipVote()">No clear winner →</button>
+        </div>
+
+        <div class="screen" id="end-screen">
+            <div class="winner-box">
+                <div class="winner-title" id="winner-text">Winner!</div>
+                <ol class="standings" id="standings"></ol>
+            </div>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script src="assets/shared.js"></script>
+    <script>
+        const frames = [
+            'a brand new company department',
+            'a mandatory weekly meeting',
+            'an internal tool nobody asked for',
+            'a corporate wellness initiative',
+            'a top secret project codename',
+            'a job title nobody can explain',
+            'a new office policy',
+            'a team building activity',
+            'a productivity framework',
+            'a quarterly employee award',
+            'a compliance training module',
+            'a rejected product name',
+            'an emergency evacuation procedure',
+            'a customer loyalty scheme',
+            'a new coffee machine setting',
+            'a leadership buzzword of the year'
+        ];
+
+        /* Weighted so common letters show up often and Q, X and Z never do. */
+        const VOWELS = 'AAAEEEIIOOU'.split('');
+        const CONSONANTS = 'BBCCDDFFGGHHJKLLMMNNPPRRSSTTVWY'.split('');
+
+        const scores = new TeamScores();
+        let frameQueue = [];
+        let totalRounds = 4;
+        let writeSeconds = 90;
+        let roundNumber = 0;
+        let shareOrder = [];
+        let shareIndex = 0;
+        let currentAcronym = '';
+        let timer = null;
+
+        function pick(pool) {
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function generateAcronym() {
+            const length = Math.random() < 0.6 ? 3 : 4;
+            const letters = [];
+            for (let i = 0; i < length; i++) {
+                letters.push(Math.random() < 0.3 ? pick(VOWELS) : pick(CONSONANTS));
+            }
+            if (!letters.some(letter => VOWELS.includes(letter))) {
+                letters[Math.floor(Math.random() * length)] = pick(VOWELS);
+            }
+            return letters.join('');
+        }
+
+        function readNumber(id, fallback, min, max) {
+            const value = parseInt(document.getElementById(id).value, 10);
+            if (Number.isNaN(value)) return fallback;
+            return Math.min(Math.max(value, min), max);
+        }
+
+        function startGame() {
+            const names = parseNames(document.getElementById('team-input').value);
+            if (names.length === 0) {
+                alert('Enter at least one team name to get started.');
+                return;
+            }
+
+            totalRounds = readNumber('rounds-input', 4, 1, 12);
+            writeSeconds = readNumber('seconds-input', 90, 30, 300);
+
+            scores.init(names);
+            scores.renderTeamButtons(document.getElementById('team-buttons'), awardPoint);
+            frameQueue = shuffleArray(frames);
+            roundNumber = 0;
+
+            startRound();
+        }
+
+        function startRound() {
+            if (frameQueue.length === 0) frameQueue = shuffleArray(frames);
+
+            currentAcronym = generateAcronym();
+            const frame = frameQueue.pop();
+
+            document.getElementById('write-progress').textContent =
+                `Round ${roundNumber + 1} of ${totalRounds}`;
+            document.getElementById('acronym-display').textContent = currentAcronym;
+            document.getElementById('frame-display').textContent = frame;
+            scores.renderScoreboard(document.getElementById('write-scoreboard'));
+
+            if (timer) timer.stop();
+            timer = createTimer({
+                seconds: writeSeconds,
+                display: document.getElementById('timer-display'),
+                warnAt: 15,
+                onDone: finishWriting
+            });
+
+            showScreen('write-screen');
+            replayAnimation(
+                document.getElementById('acronym-display'),
+                'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            );
+            timer.start();
+        }
+
+        function finishWriting() {
+            if (timer) timer.stop();
+            shareOrder = shuffleArray(scores.teams.map((team, index) => index));
+            shareIndex = 0;
+            showReader();
+        }
+
+        function showReader() {
+            const teamIndex = shareOrder[shareIndex];
+
+            document.getElementById('share-progress').textContent =
+                `Reader ${shareIndex + 1} of ${shareOrder.length}`;
+            document.getElementById('share-team').textContent = scores.name(teamIndex);
+            document.getElementById('share-acronym').textContent = currentAcronym;
+            document.getElementById('share-btn').textContent =
+                shareIndex + 1 >= shareOrder.length ? 'On to the Vote →' : 'Next Reader →';
+
+            showScreen('share-screen');
+            replayAnimation(document.getElementById('share-team'), 'popIn 0.4s ease');
+        }
+
+        function nextReader() {
+            shareIndex++;
+            if (shareIndex >= shareOrder.length) {
+                showScreen('vote-screen');
+                return;
+            }
+            showReader();
+        }
+
+        function awardPoint(teamIndex) {
+            scores.award(teamIndex);
+            nextRound();
+        }
+
+        function skipVote() {
+            nextRound();
+        }
+
+        function nextRound() {
+            roundNumber++;
+            if (roundNumber >= totalRounds) {
+                endGame();
+                return;
+            }
+            startRound();
+        }
+
+        function endGame() {
+            document.getElementById('winner-text').textContent = scores.winnerText();
+            scores.renderStandings(document.getElementById('standings'));
+            showScreen('end-screen');
+        }
+
+        function resetGame() {
+            if (timer) timer.stop();
+            showScreen('setup-screen');
+        }
+    </script>
+</body>
+</html>

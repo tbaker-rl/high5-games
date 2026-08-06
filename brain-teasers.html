@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Teasers 🧠</title>
+    <link rel="stylesheet" href="assets/shared.css">
+    <style>
+        :root {
+            --accent: #7c3aed;
+            --accent-dark: #6d28d9;
+            --accent-soft: #f5f3ff;
+            --accent-border: #c4b5fd;
+            --bg-start: #8b5cf6;
+            --bg-end: #5b21b6;
+        }
+
+        .hint-box {
+            background: #fefce8;
+            border-left: 8px solid #facc15;
+            border-radius: 12px;
+            padding: 18px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #713f12;
+            margin-bottom: 20px;
+            animation: slideUp 0.4s ease;
+        }
+
+        .answer-label {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .explanation {
+            display: block;
+            margin-top: 10px;
+            font-weight: 400;
+            font-size: 1.05rem;
+            opacity: 0.92;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a class="back-link" href="index.html">← Back to Games</a>
+        <h1>Brain Teasers 🧠</h1>
+        <p class="subtitle">Lateral thinking puzzles. First team to shout the answer takes the point.</p>
+
+        <div class="screen active" id="setup-screen">
+            <div class="setup-field">
+                <label for="team-input">Team names (separated by commas)</label>
+                <textarea id="team-input" rows="3" placeholder="e.g. Red Team, Blue Team, The Debuggers"></textarea>
+            </div>
+            <div class="setup-field">
+                <label for="round-input">How many teasers?</label>
+                <input type="number" id="round-input" value="10" min="1" max="20">
+            </div>
+            <button onclick="startGame()">Start Puzzling</button>
+        </div>
+
+        <div class="screen" id="round-screen">
+            <div class="scoreboard" id="scoreboard"></div>
+            <div class="progress" id="progress-text">Teaser 1 / 10</div>
+            <div class="prompt-box" id="teaser-text">Loading...</div>
+
+            <div class="hint-box" id="hint-box" style="display: none;"></div>
+
+            <div id="reveal-controls">
+                <button class="btn-secondary" id="hint-btn" onclick="revealHint()">💡 Reveal Hint</button>
+                <br>
+                <button onclick="revealAnswer()">Reveal Answer</button>
+            </div>
+
+            <div id="answer-area" style="display: none;">
+                <div class="reveal-box" id="answer-box"></div>
+                <div class="label">Who got it?</div>
+                <div class="team-buttons" id="team-buttons"></div>
+                <button class="btn-secondary" onclick="skipRound()">Nobody got it →</button>
+            </div>
+        </div>
+
+        <div class="screen" id="end-screen">
+            <div class="winner-box">
+                <div class="winner-title" id="winner-text">Winner!</div>
+                <ol class="standings" id="standings"></ol>
+            </div>
+            <button onclick="resetGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script src="assets/shared.js"></script>
+    <script>
+        const teasers = [
+            {
+                q: "A man pushes his car up to a hotel, then tells the owner he is bankrupt. Why?",
+                hint: "Nobody is actually driving anywhere.",
+                a: "He is playing Monopoly.",
+                why: "He landed on a hotel property he cannot afford."
+            },
+            {
+                q: "A woman has two sons born in the same hour of the same day of the same year, but they are not twins. How?",
+                hint: "Two is not the whole story.",
+                a: "They are two of a set of triplets.",
+                why: "A third sibling was born alongside them, so the pair are not twins."
+            },
+            {
+                q: "A man lives on the tenth floor. Every morning he rides the lift all the way down. Coming home he rides to the seventh and walks the rest, except on rainy days when he rides all the way up. Why?",
+                hint: "Think about what he can physically reach.",
+                a: "He is very short and can only reach the button for floor seven.",
+                why: "On rainy days he has an umbrella, which he uses to press the higher button."
+            },
+            {
+                q: "Two babies are born at exactly the same moment, but they do not share a birthday. How?",
+                hint: "The clock is not the same everywhere.",
+                a: "They were born in different time zones.",
+                why: "The same instant can fall on different calendar dates depending on location."
+            },
+            {
+                q: "Read forwards I am something heavy. Read backwards I am the opposite of something. What am I?",
+                hint: "Three letters, and it is a unit of weight.",
+                a: "Ton, which reversed spells not.",
+                why: "A ton is heavy, and not is a negation."
+            },
+            {
+                q: "A farmer has seventeen sheep. All but nine of them wander off. How many sheep does he have left?",
+                hint: "Read the sentence very literally.",
+                a: "Nine.",
+                why: "\"All but nine\" means nine stayed behind."
+            },
+            {
+                q: "I have many keys but I cannot open a single lock. What am I?",
+                hint: "You press me rather than turn me.",
+                a: "A piano.",
+                why: "Its keys make sound instead of opening anything."
+            },
+            {
+                q: "A man is found dead in the middle of a field with an unopened package next to him. How did he die?",
+                hint: "He arrived from a long way up.",
+                a: "His parachute failed to open.",
+                why: "The unopened package is the parachute."
+            },
+            {
+                q: "If you have me, you want to share me. If you share me, you no longer have me. What am I?",
+                hint: "It only stays intact while it stays quiet.",
+                a: "A secret.",
+                why: "Telling someone means it is no longer a secret."
+            },
+            {
+                q: "The more it dries, the wetter it gets. What is it?",
+                hint: "You reach for it after a shower.",
+                a: "A towel.",
+                why: "It absorbs water as it dries other things."
+            },
+            {
+                q: "A bus driver and a doctor both love the same woman. Before a week-long trip, the bus driver gives her seven apples. Why?",
+                hint: "There is a well known saying about apples.",
+                a: "An apple a day keeps the doctor away.",
+                why: "One apple for each day he is gone, to keep his rival at bay."
+            },
+            {
+                q: "How can a man go eight days without sleep?",
+                hint: "Nothing here says anything about nights.",
+                a: "He sleeps at night.",
+                why: "Days and nights are separate, so he never misses any sleep."
+            },
+            {
+                q: "Which word becomes shorter when you add two letters to it?",
+                hint: "The answer is hiding in the question.",
+                a: "Short, which becomes shorter.",
+                why: "Adding the letters e and r makes the word shorter."
+            },
+            {
+                q: "A plane crashes exactly on the border between two countries. Where do they bury the survivors?",
+                hint: "Check who the question is actually about.",
+                a: "You do not bury survivors.",
+                why: "Survivors are still alive."
+            },
+            {
+                q: "In a single storey yellow house, everything is yellow: the walls, the doors, the furniture. What colour are the stairs?",
+                hint: "Count the floors again.",
+                a: "There are no stairs.",
+                why: "A single storey house has nothing to climb to."
+            },
+            {
+                q: "What can you hold in your left hand but never in your right?",
+                hint: "Look at your own arm.",
+                a: "Your right elbow.",
+                why: "Your right hand cannot reach its own elbow."
+            },
+            {
+                q: "A man walks into a bar and asks for a glass of water. The bartender pulls out a gun. The man says thank you and leaves. Why?",
+                hint: "He had a very ordinary complaint.",
+                a: "He had hiccups.",
+                why: "The shock cured them, so he no longer needed the water."
+            },
+            {
+                q: "What can fill an entire room without taking up any space?",
+                hint: "Flip a switch.",
+                a: "Light.",
+                why: "It fills the room but occupies no volume."
+            },
+            {
+                q: "Which is heavier: a kilogram of feathers or a kilogram of gold?",
+                hint: "Read the quantities carefully.",
+                a: "Neither, they weigh the same.",
+                why: "A kilogram is a kilogram regardless of the material."
+            },
+            {
+                q: "A rooster lays an egg right on the peak of a barn roof. Which side does the egg roll down?",
+                hint: "Consider whether this could happen at all.",
+                a: "Neither, because roosters do not lay eggs.",
+                why: "Only hens lay eggs."
+            }
+        ];
+
+        const scores = new TeamScores();
+        let queue = [];
+        let currentIndex = 0;
+
+        function startGame() {
+            const names = parseNames(document.getElementById('team-input').value);
+            if (names.length === 0) {
+                alert('Enter at least one team name to get started.');
+                return;
+            }
+
+            const requested = parseInt(document.getElementById('round-input').value, 10);
+            const rounds = Math.min(
+                Math.max(Number.isNaN(requested) ? 10 : requested, 1),
+                teasers.length
+            );
+
+            scores.init(names);
+            queue = shuffleArray(teasers).slice(0, rounds);
+            currentIndex = 0;
+
+            scores.renderTeamButtons(document.getElementById('team-buttons'), awardPoint);
+            showScreen('round-screen');
+            loadRound();
+        }
+
+        function loadRound() {
+            const teaser = queue[currentIndex];
+
+            document.getElementById('progress-text').textContent =
+                `Teaser ${currentIndex + 1} / ${queue.length}`;
+            document.getElementById('teaser-text').textContent = teaser.q;
+
+            document.getElementById('hint-box').style.display = 'none';
+            document.getElementById('hint-btn').disabled = false;
+            document.getElementById('reveal-controls').style.display = 'block';
+            document.getElementById('answer-area').style.display = 'none';
+
+            scores.renderScoreboard(document.getElementById('scoreboard'));
+            replayAnimation(document.getElementById('teaser-text'), 'slideUp 0.5s ease');
+        }
+
+        function revealHint() {
+            const hintBox = document.getElementById('hint-box');
+            hintBox.textContent = `💡 ${queue[currentIndex].hint}`;
+            hintBox.style.display = 'block';
+            document.getElementById('hint-btn').disabled = true;
+        }
+
+        function revealAnswer() {
+            const teaser = queue[currentIndex];
+            document.getElementById('answer-box').innerHTML =
+                `<span class="answer-label">${escapeHtml(teaser.a)}</span>` +
+                `<span class="explanation">${escapeHtml(teaser.why)}</span>`;
+
+            document.getElementById('reveal-controls').style.display = 'none';
+            document.getElementById('answer-area').style.display = 'block';
+        }
+
+        function awardPoint(teamIndex) {
+            scores.award(teamIndex);
+            nextRound();
+        }
+
+        function skipRound() {
+            nextRound();
+        }
+
+        function nextRound() {
+            currentIndex++;
+            if (currentIndex >= queue.length) {
+                endGame();
+                return;
+            }
+            loadRound();
+        }
+
+        function endGame() {
+            document.getElementById('winner-text').textContent = scores.winnerText();
+            scores.renderStandings(document.getElementById('standings'));
+            showScreen('end-screen');
+        }
+
+        function resetGame() {
+            showScreen('setup-screen');
+        }
+    </script>
+</body>
+</html>

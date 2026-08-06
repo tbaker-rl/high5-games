@@ -1,0 +1,330 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap');
+
+/* Games override these to set their own theme. */
+:root {
+    --accent: #ea580c;
+    --accent-dark: #dc2626;
+    --accent-soft: #fff7ed;
+    --accent-border: #fdba74;
+    --bg-start: #f97316;
+    --bg-end: #dc2626;
+    --text: #333333;
+    --muted: #747d8c;
+    --faint: #94a3b8;
+    --surface: #f1f5f9;
+    --surface-hover: #cbd5e1;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background: #ffffff;
+    width: 100%;
+    max-width: 640px;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+h1 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--accent);
+    font-size: 2.6rem;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 24px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.back-link:hover { text-decoration: underline; }
+
+textarea,
+input[type="number"] {
+    width: 100%;
+    padding: 15px;
+    border: 2px dashed var(--accent-border);
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-family: 'Nunito', sans-serif;
+    resize: vertical;
+}
+
+textarea:focus,
+input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 14px 36px;
+    font-size: 1.3rem;
+    font-family: 'Fredoka One', cursive;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.18);
+    transition: transform 0.2s, background 0.2s;
+    margin-top: 16px;
+}
+
+button:hover {
+    transform: scale(1.05);
+    background: var(--accent-dark);
+}
+
+button:active { transform: scale(0.97); }
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+button.btn-secondary {
+    background: #e2e8f0;
+    color: #334155;
+    box-shadow: none;
+    font-size: 1rem;
+    padding: 10px 20px;
+    margin-top: 8px;
+}
+
+button.btn-secondary:hover {
+    background: var(--surface-hover);
+    transform: none;
+}
+
+/* Screens: only the one with .active is visible. */
+.screen { display: none; }
+.screen.active { display: block; }
+
+.progress {
+    font-size: 0.85rem;
+    color: var(--faint);
+    margin-bottom: 8px;
+}
+
+.label {
+    font-size: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--faint);
+}
+
+.headline {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.6rem;
+    color: var(--accent-dark);
+    margin: 8px 0 20px;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.prompt-box {
+    background: var(--accent-soft);
+    padding: 24px;
+    border-radius: 15px;
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    border-left: 8px solid var(--accent);
+    animation: slideUp 0.5s ease;
+    line-height: 1.45;
+}
+
+.reveal-box {
+    background: #166534;
+    color: white;
+    padding: 22px;
+    border-radius: 15px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 18px 0;
+    animation: slideUp 0.4s ease;
+    line-height: 1.45;
+}
+
+.note-box {
+    background: var(--surface);
+    color: #475569;
+    padding: 18px;
+    border-radius: 12px;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 16px 0;
+    text-align: left;
+}
+
+.timer-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 6px solid var(--accent-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.2rem;
+    margin: 0 auto 16px;
+    color: var(--accent);
+    font-family: 'Fredoka One', cursive;
+}
+
+.timer-warning {
+    color: #dc2626;
+    border-color: #dc2626;
+    animation: pulse 1s infinite;
+}
+
+/* Live team scores, shown at the top of a round. */
+.scoreboard {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.score-chip {
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+.score-chip .score-value {
+    color: var(--accent);
+    font-weight: 800;
+    margin-left: 4px;
+}
+
+.score-chip.leading {
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+}
+
+.setup-field {
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.setup-field label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.setup-row {
+    display: flex;
+    gap: 16px;
+}
+
+.setup-row .setup-field { flex: 1; }
+
+/* Grid of buttons for awarding a point to a team. */
+.team-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 20px 0 8px;
+}
+
+.team-buttons button {
+    margin-top: 0;
+    font-size: 1.05rem;
+    padding: 14px 18px;
+    width: 100%;
+}
+
+.winner-box {
+    background: var(--accent-soft);
+    border-radius: 15px;
+    padding: 24px;
+    margin: 20px 0;
+    animation: slideUp 0.5s ease;
+}
+
+.winner-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--accent-dark);
+    margin-bottom: 16px;
+}
+
+.standings {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+
+.standings li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+}
+
+.standings li.first {
+    background: #ffffff;
+    color: var(--accent-dark);
+    font-size: 1.15rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideUp {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+@media (max-width: 560px) {
+    .container { padding: 28px 20px; }
+    h1 { font-size: 2.1rem; }
+    .headline { font-size: 2rem; }
+    .prompt-box { font-size: 1.15rem; padding: 20px; }
+    .setup-row { flex-direction: column; gap: 0; }
+}
