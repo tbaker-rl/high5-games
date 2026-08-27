@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red or Blue 🔴🔵</title>
+    <link rel="stylesheet" href="assets/shared.css">
+    <style>
+        :root {
+            --accent: #4f46e5;
+            --accent-dark: #4338ca;
+            --accent-soft: #eef2ff;
+            --accent-border: #c7d2fe;
+            --bg-start: #1e293b;
+            --bg-end: #0f172a;
+        }
+
+        /* Room code, shown big so it's easy to read out to the team. */
+        .room-code {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.4rem;
+            letter-spacing: 0.25em;
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+            border-radius: 15px;
+            padding: 14px 10px 14px 24px;
+            margin: 8px 0 6px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .players-list {
+            list-style: none;
+            margin: 16px 0;
+            padding: 0;
+            text-align: left;
+        }
+
+        .players-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            background: var(--surface);
+            margin-bottom: 8px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .players-list li .tag {
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--faint);
+        }
+
+        .players-list li.me { background: var(--accent-soft); }
+        .players-list li.voted-yes .tag { color: #16a34a; }
+
+        /* The two big choice buttons. */
+        .choice-buttons {
+            display: flex;
+            gap: 16px;
+            margin: 24px 0 8px;
+        }
+
+        .btn-choice {
+            flex: 1;
+            margin-top: 0;
+            padding: 44px 12px;
+            font-size: 1.6rem;
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-red { background: #dc2626; }
+        .btn-red:hover { background: #b91c1c; }
+        .btn-blue { background: #2563eb; }
+        .btn-blue:hover { background: #1d4ed8; }
+
+        .btn-choice .dot { font-size: 2.4rem; display: block; margin-bottom: 6px; }
+
+        .btn-choice.chosen { outline: 5px solid #facc15; outline-offset: 3px; }
+        .btn-choice.dimmed { opacity: 0.35; }
+
+        .vote-status {
+            font-size: 1.1rem;
+            color: var(--muted);
+            font-weight: 700;
+            margin: 8px 0;
+        }
+
+        .verdict {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.9rem;
+            padding: 24px;
+            border-radius: 15px;
+            margin: 12px 0 20px;
+            line-height: 1.3;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .verdict.live { background: #dcfce7; color: #15803d; }
+        .verdict.die { background: #fee2e2; color: #b91c1c; }
+
+        .tally {
+            display: flex;
+            gap: 16px;
+            margin: 0 0 20px;
+        }
+
+        .tally-side {
+            flex: 1;
+            border-radius: 15px;
+            padding: 18px;
+            color: white;
+        }
+
+        .tally-side.red { background: #dc2626; }
+        .tally-side.blue { background: #2563eb; }
+
+        .tally-side .count {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.6rem;
+            line-height: 1;
+        }
+
+        .tally-side .cap {
+            font-size: 0.85rem;
+            font-weight: 700;
+            opacity: 0.9;
+        }
+
+        .outcome-group { text-align: left; margin: 16px 0; }
+        .outcome-group h3 {
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--faint);
+            margin: 0 0 8px;
+        }
+
+        .name-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .name-chip {
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .name-chip.survive { background: #dcfce7; color: #15803d; }
+        .name-chip.dead { background: #fee2e2; color: #b91c1c; }
+        .name-chip.spectator { background: var(--surface); color: var(--muted); }
+
+        .or-divider {
+            margin: 20px 0;
+            color: var(--faint);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.85rem;
+        }
+
+        #code-input { text-transform: uppercase; text-align: center; letter-spacing: 0.3em; }
+
+        .config-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            text-align: left;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 560px) {
+            .room-code { font-size: 2.4rem; }
+            .btn-choice { padding: 32px 8px; font-size: 1.3rem; }
+            .verdict { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a class="back-link" href="index.html">← Back to Games</a>
+        <h1>Red or Blue 🔴🔵</h1>
+        <p class="subtitle">Everyone picks a button. If the majority picks blue, everyone lives. If not, the blues are out.</p>
+
+        <!-- HOME: create or join a room -->
+        <div class="screen active" id="home-screen">
+            <div id="config-warning" class="config-warning" style="display:none;"></div>
+            <div class="setup-field">
+                <label for="name-input">Your name</label>
+                <input type="text" id="name-input" maxlength="24" placeholder="e.g. Thomas" style="width:100%;padding:15px;border:2px dashed var(--accent-border);border-radius:10px;font-size:1.1rem;font-family:'Nunito',sans-serif;">
+            </div>
+            <button onclick="createRoom()">Create a Room</button>
+            <div class="or-divider">— or join one —</div>
+            <div class="setup-field">
+                <label for="code-input">Room code</label>
+                <input type="text" id="code-input" maxlength="4" placeholder="ABCD" style="width:100%;padding:15px;border:2px dashed var(--accent-border);border-radius:10px;font-size:1.4rem;font-family:'Fredoka One',cursive;">
+            </div>
+            <button class="btn-secondary" onclick="joinRoom()">Join Room</button>
+        </div>
+
+        <!-- LOBBY: waiting for players -->
+        <div class="screen" id="lobby-screen">
+            <div class="label">Share this code with the team</div>
+            <div class="room-code" id="lobby-code">----</div>
+            <p class="subtitle" id="lobby-count">Waiting for players…</p>
+            <ul class="players-list" id="lobby-players"></ul>
+            <div id="lobby-host-controls" style="display:none;">
+                <button onclick="openVoting()">Open Voting →</button>
+            </div>
+            <p class="vote-status" id="lobby-guest-note" style="display:none;">Waiting for the host to open voting…</p>
+            <button class="btn-secondary" onclick="leaveRoom()">Leave Room</button>
+        </div>
+
+        <!-- VOTE: make your choice -->
+        <div class="screen" id="vote-screen">
+            <div class="label">Make your choice</div>
+            <div class="headline">Red or Blue?</div>
+            <div class="choice-buttons" id="choice-buttons">
+                <button class="btn-choice btn-red" id="btn-red" onclick="castVote('red')"><span class="dot">🔴</span>RED</button>
+                <button class="btn-choice btn-blue" id="btn-blue" onclick="castVote('blue')"><span class="dot">🔵</span>BLUE</button>
+            </div>
+            <p class="vote-status" id="vote-status">Pick a button. Choices stay secret until the reveal.</p>
+            <div id="vote-host-controls" style="display:none;">
+                <button onclick="revealResults()" id="reveal-btn">Reveal Results</button>
+            </div>
+            <p class="vote-status" id="vote-guest-note" style="display:none;">Waiting for the host to reveal…</p>
+        </div>
+
+        <!-- REVEAL: the outcome -->
+        <div class="screen" id="reveal-screen">
+            <div class="verdict" id="verdict">…</div>
+            <div class="tally">
+                <div class="tally-side red">
+                    <div class="count" id="red-count">0</div>
+                    <div class="cap">🔴 chose red</div>
+                </div>
+                <div class="tally-side blue">
+                    <div class="count" id="blue-count">0</div>
+                    <div class="cap">🔵 chose blue</div>
+                </div>
+            </div>
+            <div class="outcome-group" id="survivors-group">
+                <h3>✅ Survivors</h3>
+                <div class="name-chips" id="survivors"></div>
+            </div>
+            <div class="outcome-group" id="casualties-group">
+                <h3>💀 Didn't make it</h3>
+                <div class="name-chips" id="casualties"></div>
+            </div>
+            <div class="outcome-group" id="spectators-group" style="display:none;">
+                <h3>😴 Didn't vote</h3>
+                <div class="name-chips" id="spectators"></div>
+            </div>
+            <div id="reveal-host-controls" style="display:none;">
+                <button onclick="playAgain()">Play Again</button>
+            </div>
+            <p class="vote-status" id="reveal-guest-note" style="display:none;">Waiting for the host to start a new round…</p>
+            <button class="btn-secondary" onclick="leaveRoom()">Leave Room</button>
+        </div>
+    </div>
+
+    <!-- Firebase (compat build — plain globals, no bundler needed) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+    <script src="assets/shared.js"></script>
+    <script>
+        /* ------------------------------------------------------------------ */
+        /* Firebase config — from your Firebase project (safe to ship public). */
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJ6DTzrLKp3YWSsZA2r51XKZnqcOg80Gk",
+            authDomain: "high5-games.firebaseapp.com",
+            databaseURL: "https://high5-games-default-rtdb.firebaseio.com",
+            projectId: "high5-games",
+            storageBucket: "high5-games.firebasestorage.app",
+            messagingSenderId: "28531432262",
+            appId: "1:28531432262:web:a55cbee34940f8bd71e347"
+        };
+        /* ------------------------------------------------------------------ */
+
+        let db = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch (err) {
+            showConfigWarning('Could not connect to Firebase. Double-check the config in this file. (' + err.message + ')');
+        }
+
+        // A stable id for this browser, so a refresh rejoins as the same player.
+        const myId = getPlayerId();
+
+        let currentCode = null;   // room we're in
+        let roomRef = null;       // live ref with the .on('value') listener
+        let roomData = null;      // latest snapshot value
+
+        function getPlayerId() {
+            let id = localStorage.getItem('rob_playerId');
+            if (!id) {
+                id = 'p_' + Math.random().toString(36).slice(2, 10);
+                localStorage.setItem('rob_playerId', id);
+            }
+            return id;
+        }
+
+        function showConfigWarning(msg) {
+            const el = document.getElementById('config-warning');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        function generateCode() {
+            // No vowels / ambiguous letters, so codes don't spell things or confuse.
+            const letters = 'BCDFGHJKLMNPQRSTVWXYZ';
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                code += letters[Math.floor(Math.random() * letters.length)];
+            }
+            return code;
+        }
+
+        function myName() {
+            return (document.getElementById('name-input').value || '').trim();
+        }
+
+        async function createRoom() {
+            if (!db) return;
+            const name = myName();
+            if (!name) { alert('Enter your name first.'); return; }
+
+            // Find a code that isn't already taken.
+            let code = generateCode();
+            for (let i = 0; i < 5; i++) {
+                const snap = await db.ref('rooms/' + code).once('value');
+                if (!snap.exists()) break;
+                code = generateCode();
+            }
+
+            await db.ref('rooms/' + code).set({
+                createdAt: firebase.database.ServerValue.TIMESTAMP,
+                hostId: myId,
+                phase: 'lobby',
+                players: {
+                    [myId]: { name: name, choice: null, voted: false, joinedAt: firebase.database.ServerValue.TIMESTAMP }
+                }
+            });
+
+            enterRoom(code);
+        }
+
+        async function joinRoom() {
+            if (!db) return;
+            const name = myName();
+            if (!name) { alert('Enter your name first.'); return; }
+
+            const code = (document.getElementById('code-input').value || '').trim().toUpperCase();
+            if (code.length !== 4) { alert('Room codes are 4 letters.'); return; }
+
+            const snap = await db.ref('rooms/' + code).once('value');
+            if (!snap.exists()) { alert("No room with code " + code + ". Check with the host."); return; }
+
+            const room = snap.val();
+            const alreadyIn = room.players && room.players[myId];
+            if (room.phase !== 'lobby' && !alreadyIn) {
+                alert('That game has already started. Ask the host to start a new round.');
+                return;
+            }
+
+            await db.ref('rooms/' + code + '/players/' + myId).update({
+                name: name,
+                choice: room.players && room.players[myId] ? room.players[myId].choice : null,
+                voted: room.players && room.players[myId] ? !!room.players[myId].voted : false,
+                joinedAt: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            enterRoom(code);
+        }
+
+        function enterRoom(code) {
+            currentCode = code;
+            localStorage.setItem('rob_room', code);
+            localStorage.setItem('rob_name', myName());
+
+            if (roomRef) roomRef.off();
+            roomRef = db.ref('rooms/' + code);
+            roomRef.on('value', snap => renderRoom(snap.val()));
+        }
+
+        function leaveRoom() {
+            if (roomRef && currentCode) {
+                db.ref('rooms/' + currentCode + '/players/' + myId).remove();
+                roomRef.off();
+            }
+            roomRef = null;
+            currentCode = null;
+            roomData = null;
+            localStorage.removeItem('rob_room');
+            showScreen('home-screen');
+        }
+
+        function isHost() {
+            return roomData && roomData.hostId === myId;
+        }
+
+        function playersArray() {
+            if (!roomData || !roomData.players) return [];
+            return Object.entries(roomData.players)
+                .map(([id, p]) => ({ id, ...p }))
+                .sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+        }
+
+        function renderRoom(room) {
+            roomData = room;
+
+            // Room closed, or we've been removed.
+            if (!room) {
+                alert('This room was closed.');
+                leaveRoom();
+                return;
+            }
+            if (!room.players || !room.players[myId]) {
+                leaveRoom();
+                return;
+            }
+
+            // If the host vanished, the earliest-joined player takes over.
+            const players = playersArray();
+            if (!room.players[room.hostId]) {
+                const heir = players[0];
+                if (heir && heir.id === myId) {
+                    db.ref('rooms/' + currentCode + '/hostId').set(myId);
+                }
+            }
+
+            if (room.phase === 'lobby') renderLobby(players);
+            else if (room.phase === 'voting') renderVoting(players);
+            else if (room.phase === 'revealed') renderReveal(players);
+        }
+
+        function renderLobby(players) {
+            document.getElementById('lobby-code').textContent = currentCode;
+            document.getElementById('lobby-count').textContent =
+                players.length + (players.length === 1 ? ' player in the room' : ' players in the room');
+
+            const list = document.getElementById('lobby-players');
+            list.innerHTML = '';
+            players.forEach(p => {
+                const li = document.createElement('li');
+                if (p.id === myId) li.classList.add('me');
+                const tags = [];
+                if (p.id === roomData.hostId) tags.push('👑 Host');
+                if (p.id === myId) tags.push('You');
+                li.innerHTML = `<span>${escapeHtml(p.name)}</span><span class="tag">${tags.join(' · ')}</span>`;
+                list.appendChild(li);
+            });
+
+            document.getElementById('lobby-host-controls').style.display = isHost() ? 'block' : 'none';
+            document.getElementById('lobby-guest-note').style.display = isHost() ? 'none' : 'block';
+            showScreen('lobby-screen');
+        }
+
+        function renderVoting(players) {
+            const me = roomData.players[myId];
+            const votedCount = players.filter(p => p.voted).length;
+
+            const redBtn = document.getElementById('btn-red');
+            const blueBtn = document.getElementById('btn-blue');
+            redBtn.classList.remove('chosen', 'dimmed');
+            blueBtn.classList.remove('chosen', 'dimmed');
+            const locked = !!me.voted;
+            redBtn.disabled = locked;
+            blueBtn.disabled = locked;
+
+            if (locked) {
+                (me.choice === 'red' ? redBtn : blueBtn).classList.add('chosen');
+                (me.choice === 'red' ? blueBtn : redBtn).classList.add('dimmed');
+                document.getElementById('vote-status').textContent =
+                    `You locked in ${me.choice.toUpperCase()}. ${votedCount} of ${players.length} have voted.`;
+            } else {
+                document.getElementById('vote-status').textContent =
+                    `Pick a button — it stays secret. ${votedCount} of ${players.length} have voted.`;
+            }
+
+            const host = isHost();
+            document.getElementById('vote-host-controls').style.display = host ? 'block' : 'none';
+            document.getElementById('vote-guest-note').style.display = host ? 'none' : 'block';
+            if (host) {
+                const btn = document.getElementById('reveal-btn');
+                const allIn = votedCount === players.length;
+                btn.textContent = allIn
+                    ? 'Reveal Results'
+                    : `Reveal Now (${votedCount}/${players.length} voted)`;
+            }
+            showScreen('vote-screen');
+        }
+
+        function renderReveal(players) {
+            const voters = players.filter(p => p.voted && p.choice);
+            const reds = voters.filter(p => p.choice === 'red');
+            const blues = voters.filter(p => p.choice === 'blue');
+            const nonVoters = players.filter(p => !p.voted || !p.choice);
+            const total = voters.length;
+
+            // Blue only saves everyone with a STRICT majority (> 50%).
+            const blueWins = blues.length > total / 2;
+
+            document.getElementById('red-count').textContent = reds.length;
+            document.getElementById('blue-count').textContent = blues.length;
+
+            const verdict = document.getElementById('verdict');
+            if (total === 0) {
+                verdict.className = 'verdict die';
+                verdict.textContent = 'Nobody voted!';
+            } else if (blueWins) {
+                verdict.className = 'verdict live';
+                verdict.textContent = '🔵 Blue takes the majority — everyone lives!';
+            } else {
+                verdict.className = 'verdict die';
+                verdict.textContent = '🔴 No blue majority — everyone who picked blue is out.';
+            }
+
+            // Survivors: red voters always live; blue voters live only if blue won.
+            const survivors = blueWins ? voters.slice() : reds.slice();
+            const casualties = blueWins ? [] : blues.slice();
+
+            renderChips('survivors', survivors, 'survive');
+            renderChips('casualties', casualties, 'dead');
+            document.getElementById('casualties-group').style.display = casualties.length ? 'block' : 'none';
+
+            renderChips('spectators', nonVoters, 'spectator');
+            document.getElementById('spectators-group').style.display = nonVoters.length ? 'block' : 'none';
+
+            const host = isHost();
+            document.getElementById('reveal-host-controls').style.display = host ? 'block' : 'none';
+            document.getElementById('reveal-guest-note').style.display = host ? 'none' : 'block';
+            showScreen('reveal-screen');
+        }
+
+        function renderChips(elId, list, cls) {
+            const el = document.getElementById(elId);
+            el.innerHTML = '';
+            list.forEach(p => {
+                const chip = document.createElement('span');
+                chip.className = 'name-chip ' + cls;
+                chip.textContent = p.name;
+                el.appendChild(chip);
+            });
+        }
+
+        /* ---- host + player actions ---- */
+
+        function openVoting() {
+            if (!isHost()) return;
+            const updates = {};
+            Object.keys(roomData.players).forEach(pid => {
+                updates['players/' + pid + '/choice'] = null;
+                updates['players/' + pid + '/voted'] = false;
+            });
+            updates['phase'] = 'voting';
+            db.ref('rooms/' + currentCode).update(updates);
+        }
+
+        function castVote(choice) {
+            if (!roomData || roomData.phase !== 'voting') return;
+            if (roomData.players[myId].voted) return;
+            db.ref('rooms/' + currentCode + '/players/' + myId).update({ choice: choice, voted: true });
+        }
+
+        function revealResults() {
+            if (!isHost()) return;
+            db.ref('rooms/' + currentCode + '/phase').set('revealed');
+        }
+
+        function playAgain() {
+            if (!isHost()) return;
+            openVoting();
+        }
+
+        /* ---- reconnect: if we reload mid-game, rejoin the saved room ---- */
+        (function tryReconnect() {
+            if (!db) return;
+            const saved = localStorage.getItem('rob_room');
+            const savedName = localStorage.getItem('rob_name');
+            if (savedName) document.getElementById('name-input').value = savedName;
+            if (!saved) return;
+            db.ref('rooms/' + saved + '/players/' + myId).once('value').then(snap => {
+                if (snap.exists()) enterRoom(saved);
+                else localStorage.removeItem('rob_room');
+            });
+        })();
+    </script>
+</body>
+</html>
